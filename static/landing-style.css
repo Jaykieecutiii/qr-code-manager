@@ -1,6 +1,4 @@
-/* static/landing-style.css */
 
-/* --- General & Variables --- */
 :root {
     --primary-color: #0d6efd;
     --primary-darker: #0b5ed7;
@@ -39,7 +37,7 @@ h1, h2, h3 {
     font-weight: 700;
 }
 
-/* --- Header --- */
+
 header {
     background-color: #fff;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -88,11 +86,12 @@ nav a:hover {
     border-radius: 50px;
 }
 
-.auth-links a:first-child { /* Nút Tạo tài khoản */
+.auth-links a:first-child {
     color: var(--primary-color);
 }
 
-.auth-links a:last-child { /* Nút Đăng nhập */
+.auth-links a:last-child {
+
     background-color: var(--primary-color);
     color: #fff;
     margin-left: 10px;
@@ -104,8 +103,6 @@ nav a:hover {
     color: #fff;
 }
 
-
-/* --- Hero Section --- */
 #hero {
     background: linear-gradient(45deg, rgba(47, 79, 79, 0.9), rgba(13, 110, 253, 0.8)), url('https://www.toptal.com/designers/subtlepatterns/uploads/double-bubble-outline.png');
     color: var(--text-light);
@@ -125,7 +122,7 @@ nav a:hover {
     opacity: 0.9;
 }
 
-/* --- Features Section --- */
+
 #tinh-nang h2 {
     text-align: center;
     margin-bottom: 60px;
@@ -161,7 +158,7 @@ nav a:hover {
     margin-bottom: 10px;
 }
 
-/* --- Intro Section --- */
+
 .intro-row {
     display: flex;
     align-items: center;
@@ -184,10 +181,10 @@ nav a:hover {
     align-items: flex-start;
 }
 #gioi-thieu ul li::before {
-    content: '\f058'; /* Font Awesome check-circle icon */
+    content: '\f058';
     font-family: 'Font Awesome 6 Free';
     font-weight: 900;
-    color: #198754; /* Green color for checkmarks */
+    color: #198754;
     margin-right: 15px;
     font-size: 20px;
 }
@@ -207,7 +204,7 @@ nav a:hover {
 }
 
 
-/* --- Contact Form --- */
+
 #lien-he h2, #lien-he .section-description {
     text-align: center;
 }
@@ -243,7 +240,7 @@ nav a:hover {
     background-color: var(--primary-darker);
 }
 
-/* --- Footer --- */
+
 footer {
     background-color: var(--header-dark-bg);
     color: var(--text-light);
@@ -263,10 +260,10 @@ footer p {
     nav ul {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 10px 20px; /* Giảm khoảng cách dọc và ngang */
+        gap: 10px 20px;
     }
     .auth-links {
-        margin-top: 10px; /* Tạo khoảng cách nếu menu xuống hàng */
+        margin-top: 10px;
     }
 
     #hero h1 {
@@ -282,18 +279,17 @@ footer p {
 
     .intro-row {
         flex-direction: column;
-        text-align: center; /* Canh giữa text khi thành 1 cột */
+        text-align: center;
     }
     .intro-text ul {
-        text-align: left; /* Giữ list canh trái cho dễ đọc */
-        padding-left: 20px; /* Thêm padding nếu cần */
+        text-align: left;
+        padding-left: 20px;
     }
     .intro-visual {
-        margin-top: 30px; /* Tạo khoảng cách */
-    }
+        margin-top: 30px;
 }
 
-/* --- Cho màn hình Điện thoại (ví dụ: dưới 768px) --- */
+
 @media (max-width: 767.98px) {
     .logo a {
         font-size: 22px;
@@ -302,7 +298,7 @@ footer p {
         gap: 8px 15px;
     }
     nav a {
-        font-size: 15px; /* Giảm kích thước chữ menu */
+        font-size: 15px;
     }
     .auth-links a {
         padding: 6px 14px;
@@ -323,12 +319,12 @@ footer p {
         padding: 60px 0;
     }
 
-    h2 { /* Tiêu đề các section */
+    h2 {
         font-size: 28px;
     }
 
     .features-grid {
-        grid-template-columns: 1fr; /* Mỗi feature một hàng */
+        grid-template-columns: 1fr;
     }
     .feature-item {
         padding: 25px;
@@ -338,35 +334,35 @@ footer p {
         font-size: 28px;
     }
     #gioi-thieu ul li::before {
-        font-size: 18px; /* Giảm kích thước icon check */
+        font-size: 18px;
         margin-right: 10px;
     }
 }
 
-/* --- Cho màn hình Điện thoại Rất nhỏ (ví dụ: dưới 576px) --- */
+
 @media (max-width: 575.98px) {
     header .container {
-        align-items: center; /* Canh giữa logo và nav khi thành 1 cột */
+        align-items: center;
     }
     nav ul {
-        flex-direction: column; /* Menu xếp dọc hoàn toàn */
+        flex-direction: column;
         gap: 15px;
     }
     .auth-links {
         display: flex;
         flex-direction: column;
         width: 100%;
-        max-width: 250px; /* Giới hạn chiều rộng nút */
+        max-width: 250px;
         margin-top: 15px;
     }
     .auth-links a {
         width: 100%;
         text-align: center;
-        box-sizing: border-box; /* Để padding không làm tăng width */
+        box-sizing: border-box;
     }
      .auth-links a:last-child {
         margin-left: 0;
-        margin-top: 10px; /* Khoảng cách giữa 2 nút */
+        margin-top: 10px;
     }
 
     #hero h1 {
@@ -389,7 +385,7 @@ footer p {
     }
 }
 .mobile-menu-toggle {
-    display: none; /* Sẽ hiện ra bằng @media query */
+    display: none;
     background: none;
     border: none;
     color: var(--header-dark-bg);
@@ -399,7 +395,6 @@ footer p {
     line-height: 1;
 }
 
-/* --- Mobile Sidebar Styling (Ban đầu ẩn hoàn toàn) --- */
 body.no-scroll {
     overflow: hidden;
 }
@@ -467,7 +462,6 @@ body.no-scroll {
     flex-direction: column;
     gap: 10px;
 }
-/* (Style cho nút trong mobile-sidebar-auth giữ nguyên như cũ) */
 .mobile-sidebar-auth .btn { display: block; width: 100%; padding: 10px 15px; text-align: center; border-radius: 50px; font-weight: 500; text-decoration: none; box-sizing: border-box; }
 .mobile-sidebar-auth .btn-primary { background-color: var(--primary-color); color: #fff; border: 2px solid var(--primary-color); }
 .mobile-sidebar-auth .btn-primary:hover { background-color: var(--primary-darker); border-color: var(--primary-darker); }
@@ -493,42 +487,33 @@ body.no-scroll {
     transition: opacity 0.3s ease-in-out, visibility 0s 0s;
 }
 
-/* --- Header của trang chủ (landing-header) --- */
-/* CSS hiện tại của bạn cho .landing-header, .logo, .desktop-nav có thể giữ nguyên */
-/* Chỉ cần đảm bảo .desktop-nav sẽ bị ẩn trên mobile */
 header.landing-header .container {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-
-/* === RESPONSIVE CHO LANDING PAGE === */
-
-/* Điểm breakpoint bạn muốn menu mobile bắt đầu hiển thị, ví dụ 992px hoặc 768px */
 @media (max-width: 991.98px) {
     .desktop-nav {
-        display: none; /* Ẩn menu desktop */
+        display: none;
     }
     .mobile-menu-toggle {
-        display: block; /* Hiện nút 3 chấm/hamburger */
+        display: block;
     }
-    /* Đảm bảo logo và nút toggle căn chỉnh tốt */
     header.landing-header .container {
-        /* Không cần thay đổi nhiều ở đây nếu logo và nút toggle tự căn chỉnh tốt */
+
     }
     header.landing-header .logo {
-        /* Nếu cần, điều chỉnh flex-grow để logo không chiếm quá nhiều không gian khi có nút toggle */
-        flex-grow: 0; /* Hoặc một giá trị phù hợp */
-        margin-right: auto; /* Đẩy nút toggle sang phải nếu cần */
+
+        flex-grow: 0;
+        margin-right: auto;
     }
 }
 
-/* Các @media query khác cho phần content của trang chủ giữ nguyên như đã làm */
 @media (max-width: 767.98px) {
-    /* ... các style cho section, h1, h2, feature-item trên mobile ... */
+
 }
 
 @media (max-width: 575.98px) {
-    /* ... các style cho điện thoại rất nhỏ ... */
+}
 }
