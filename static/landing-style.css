@@ -388,3 +388,147 @@ footer p {
         padding: 12px;
     }
 }
+.mobile-menu-toggle {
+    display: none; /* Sẽ hiện ra bằng @media query */
+    background: none;
+    border: none;
+    color: var(--header-dark-bg);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+}
+
+/* --- Mobile Sidebar Styling (Ban đầu ẩn hoàn toàn) --- */
+body.no-scroll {
+    overflow: hidden;
+}
+.mobile-sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    z-index: 1002;
+    transition: left 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.mobile-sidebar.open {
+    left: 0;
+}
+.mobile-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+.mobile-sidebar-title {
+    font-size: 24px;
+    color: var(--header-dark-bg);
+    margin: 0;
+}
+.close-sidebar-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: var(--secondary-color);
+    cursor: pointer;
+    padding: 0;
+}
+.mobile-sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.mobile-sidebar-nav li a {
+    display: block;
+    padding: 12px 0;
+    font-size: 18px;
+    color: var(--text-dark);
+    text-decoration: none;
+    transition: color 0.2s;
+    font-weight: 500;
+}
+.mobile-sidebar-nav li a:hover {
+    color: var(--primary-color);
+}
+.mobile-sidebar-auth {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+/* (Style cho nút trong mobile-sidebar-auth giữ nguyên như cũ) */
+.mobile-sidebar-auth .btn { display: block; width: 100%; padding: 10px 15px; text-align: center; border-radius: 50px; font-weight: 500; text-decoration: none; box-sizing: border-box; }
+.mobile-sidebar-auth .btn-primary { background-color: var(--primary-color); color: #fff; border: 2px solid var(--primary-color); }
+.mobile-sidebar-auth .btn-primary:hover { background-color: var(--primary-darker); border-color: var(--primary-darker); }
+.mobile-sidebar-auth .btn-outline { border: 2px solid var(--primary-color); color: var(--primary-color); }
+.mobile-sidebar-auth .btn-outline:hover { background-color: var(--primary-color); color: #fff; }
+
+
+.mobile-sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 1001;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0s 0.3s;
+}
+.mobile-sidebar-overlay.open {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease-in-out, visibility 0s 0s;
+}
+
+/* --- Header của trang chủ (landing-header) --- */
+/* CSS hiện tại của bạn cho .landing-header, .logo, .desktop-nav có thể giữ nguyên */
+/* Chỉ cần đảm bảo .desktop-nav sẽ bị ẩn trên mobile */
+header.landing-header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+/* === RESPONSIVE CHO LANDING PAGE === */
+
+/* Điểm breakpoint bạn muốn menu mobile bắt đầu hiển thị, ví dụ 992px hoặc 768px */
+@media (max-width: 991.98px) {
+    .desktop-nav {
+        display: none; /* Ẩn menu desktop */
+    }
+    .mobile-menu-toggle {
+        display: block; /* Hiện nút 3 chấm/hamburger */
+    }
+    /* Đảm bảo logo và nút toggle căn chỉnh tốt */
+    header.landing-header .container {
+        /* Không cần thay đổi nhiều ở đây nếu logo và nút toggle tự căn chỉnh tốt */
+    }
+    header.landing-header .logo {
+        /* Nếu cần, điều chỉnh flex-grow để logo không chiếm quá nhiều không gian khi có nút toggle */
+        flex-grow: 0; /* Hoặc một giá trị phù hợp */
+        margin-right: auto; /* Đẩy nút toggle sang phải nếu cần */
+    }
+}
+
+/* Các @media query khác cho phần content của trang chủ giữ nguyên như đã làm */
+@media (max-width: 767.98px) {
+    /* ... các style cho section, h1, h2, feature-item trên mobile ... */
+}
+
+@media (max-width: 575.98px) {
+    /* ... các style cho điện thoại rất nhỏ ... */
+}

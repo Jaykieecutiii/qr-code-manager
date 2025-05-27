@@ -4,17 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phần mềm quản lý QR</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='landing-style.css') }}">
 </head>
 <body>
-    <header>
+    <div class="mobile-sidebar" id="mobileSidebar">
+        <div class="mobile-sidebar-header">
+            <h2 class="mobile-sidebar-title">Quản Lý QR</h2>
+            <button class="close-sidebar-btn" id="closeSidebarBtn">&times;</button>
+        </div>
+        <nav class="mobile-sidebar-nav">
+            <ul>
+                <li><a href="{{ url_for('index') }}" class="mobile-nav-link">Trang chủ</a></li>
+                <li><a href="#tinh-nang" class="mobile-nav-link">Tính năng</a></li>
+                <li><a href="#gioi-thieu" class="mobile-nav-link">Giới thiệu</a></li>
+                <li><a href="#lien-he" class="mobile-nav-link">Liên hệ</a></li>
+            </ul>
+        </nav>
+        <div class="mobile-sidebar-auth">
+            <a href="{{ url_for('register') }}" class="btn btn-outline">Tạo tài khoản</a>
+            <a href="{{ url_for('login_page') }}" class="btn btn-primary">Đăng nhập</a>
+        </div>
+    </div>
+    <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay"></div>
+
+    <header class="landing-header">
         <div class="container">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="fas fa-ellipsis-v"></i> </button>
+
             <div class="logo">
                 <a href="{{ url_for('index') }}">Quản lý QR</a>
             </div>
-            <nav>
+
+            <nav class="desktop-nav">
                 <ul>
                     <li><a href="{{ url_for('index') }}">Trang chủ</a></li>
                     <li><a href="#tinh-nang">Tính năng</a></li>
@@ -30,74 +54,13 @@
     </header>
 
     <section id="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1>Giải pháp quản lý sản phẩm bằng QR Code hiệu quả</h1>
-                <p class="sub-headline">Nâng cao hiệu suất, theo dõi dễ dàng, và tối ưu hóa quy trình kinh doanh của bạn.</p>
-            </div>
-        </div>
-    </section>
-
+        </section>
     <section id="tinh-nang" class="section">
-        <div class="container">
-            <h2>Các tính năng nổi bật</h2>
-            <div class="features-grid">
-                <div class="feature-item">
-                    <i class="fas fa-qrcode"></i>
-                    <h3>Quản lý mã QR</h3>
-                    <p>Tạo, in và quản lý mã QR dễ dàng.</p>
-                </div>
-                <div class="feature-item">
-                     <i class="fas fa-boxes"></i>
-                    <h3>Quản lý kho hàng</h3>
-                    <p>Theo dõi số lượng, vị trí và trạng thái sản phẩm.</p>
-                </div>
-                 <div class="feature-item">
-                     <i class="fas fa-chart-bar"></i>
-                    <h3>Báo cáo và thống kê</h3>
-                    <p>Xem báo cáo chi tiết về sản phẩm và kho hàng.</p>
-                </div>
-                 <div class="feature-item">
-                     <i class="fas fa-handshake"></i>
-                    <h3>Tích hợp dễ dàng</h3>
-                    <p>Kết nối với các hệ thống khác của bạn.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
+        </section>
     <section id="gioi-thieu" class="section bg-light">
-        <div class="container">
-            <div class="intro-row">
-                <div class="intro-text">
-                    <h2>Tại sao bạn nên chọn quản lý sản phẩm bằng QR Code?</h2>
-                    <p>Khám phá những lợi ích vượt trội mà hệ thống quản lý sản phẩm bằng QR Code mang lại cho doanh nghiệp của bạn. Đây không chỉ là một công nghệ, mà là một giải pháp toàn diện để tối ưu hóa quy trình và nâng cao hiệu quả.</p>
-                    <ul>
-                        <li><strong>Theo dõi chính xác và theo thời gian thực:</strong> Dễ dàng cập nhật vị trí, trạng thái và thông tin chi tiết của từng sản phẩm ngay lập tức.</li>
-                        <li><strong>Tiết kiệm thời gian và chi phí:</strong> Giảm thiểu các công việc thủ công trong kiểm kê, quản lý kho và theo dõi sản phẩm.</li>
-                        <li><strong>Nâng cao tính minh bạch và truy xuất nguồn gốc:</strong> Cung cấp thông tin đầy đủ về sản phẩm, từ nhà sản xuất đến người tiêu dùng, tăng cường niềm tin.</li>
-                    </ul>
-                    <a href="#lien-he" class="button primary">Tìm hiểu thêm</a>
-                </div>
-                <div class="intro-visual">
-                    </div>
-            </div>
-        </div>
-    </section>
-
-     <section id="lien-he" class="section">
-        <div class="container">
-            <h2>Liên hệ với chúng tôi</h2>
-            <p class="section-description">Bạn có câu hỏi hoặc muốn trải nghiệm thử phần mềm? Hãy liên hệ ngay!</p>
-            <form class="contact-form" action="#" method="POST">
-                <input type="text" name="contact_name" placeholder="Tên của bạn" required>
-                <input type="email" name="contact_email" placeholder="Địa chỉ email" required>
-                <textarea name="contact_message" placeholder="Nội dung tin nhắn" required></textarea>
-                <button type="submit" class="button primary">Gửi tin nhắn</button>
-            </form>
-        </div>
-    </section>
-
+        </section>
+    <section id="lien-he" class="section">
+        </section>
     <footer>
         <div class="container">
             <p>&copy; 2025 Quản lý QR. All rights reserved.</p>
@@ -105,19 +68,52 @@
     </footer>
 
     <script>
+        // JavaScript cho smooth scroll và mobile sidebar giữ nguyên như lần trước
         document.addEventListener('DOMContentLoaded', function() {
-            // JavaScript để cuộn mượt đến các section
-            document.querySelectorAll('nav ul li a[href^="#"], a.button.primary[href^="#"]').forEach(anchor => {
-                if (anchor.getAttribute('href') !== '#') {
+            // Smooth scroll cho các link anchor (bao gồm cả link trong mobile sidebar)
+            document.querySelectorAll('header nav a[href^="#"], .mobile-sidebar-nav a[href^="#"]').forEach(anchor => {
+                if (anchor.getAttribute('href') !== '#') { // Bỏ qua các link chỉ có href="#"
                     anchor.addEventListener('click', function (e) {
                         e.preventDefault();
                         const sectionId = this.getAttribute('href');
-                        document.querySelector(sectionId).scrollIntoView({
-                            behavior: 'smooth'
-                        });
+                        const targetSection = document.querySelector(sectionId);
+                        if (targetSection) {
+                            targetSection.scrollIntoView({
+                                behavior: 'smooth'
+                            });
+                        }
+                        // Đóng sidebar sau khi nhấn link (nếu đang mở và nếu đó là link trong mobile sidebar)
+                        if (this.classList.contains('mobile-nav-link') && document.getElementById('mobileSidebar').classList.contains('open')) {
+                            document.getElementById('mobileSidebar').classList.remove('open');
+                            document.getElementById('mobileSidebarOverlay').classList.remove('open');
+                            document.body.classList.remove('no-scroll');
+                        }
                     });
                 }
             });
+
+            // JavaScript cho Mobile Sidebar
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileSidebar = document.getElementById('mobileSidebar');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+            const mobileSidebarOverlay = document.getElementById('mobileSidebarOverlay');
+
+            if (mobileMenuToggle && mobileSidebar && closeSidebarBtn && mobileSidebarOverlay) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    mobileSidebar.classList.add('open');
+                    mobileSidebarOverlay.classList.add('open');
+                    document.body.classList.add('no-scroll');
+                });
+
+                function closeMenu() {
+                    mobileSidebar.classList.remove('open');
+                    mobileSidebarOverlay.classList.remove('open');
+                    document.body.classList.remove('no-scroll');
+                }
+
+                closeSidebarBtn.addEventListener('click', closeMenu);
+                mobileSidebarOverlay.addEventListener('click', closeMenu);
+            }
         });
     </script>
 </body>
