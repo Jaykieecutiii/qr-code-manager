@@ -650,7 +650,7 @@ def pd_nhap_san_pham_moi():
                                        product_name_processed=product_name, today_date=today_date_str)
 
             qr_data_sp = url_for('view_product_details_by_qr', product_internal_id=internal_id, _external=True)
-            qr_folder_sp = os.path.join(app.static_folder, 'product_qrcodes')
+            qr_folder_sp = os.path.join(app.static_folder, 'icon')
             if not os.path.exists(qr_folder_sp):
                 os.makedirs(qr_folder_sp)
             qr_filename_sp = f"product_{internal_id}.png"
@@ -659,7 +659,7 @@ def pd_nhap_san_pham_moi():
             try:
                 qr_img_sp = qrcode.make(qr_data_sp)
                 qr_img_sp.save(qr_path_on_disk_sp)
-                product_qr_code_path_for_template = os.path.join('product_qrcodes', qr_filename_sp)
+                product_qr_code_path_for_template = os.path.join('icon', qr_filename_sp)
 
                 generated_qr_path = product_qr_code_path_for_template
                 generated_product_id_internal = internal_id  # Sửa ở đây
@@ -778,13 +778,13 @@ def save_scanned_product_to_inventory():
 
             qr_data_sys = url_for('view_product_details_by_qr', product_internal_id=final_product_id_internal,
                                   _external=True)
-            qr_folder_sys = os.path.join(app.static_folder, 'product_qrcodes')
+            qr_folder_sys = os.path.join(app.static_folder, 'icon')
             if not os.path.exists(qr_folder_sys): os.makedirs(qr_folder_sys)
             qr_filename_sys = f"product_{final_product_id_internal}.png"
             qr_path_on_disk_sys = os.path.join(qr_folder_sys, qr_filename_sys)
             qr_img_sys = qrcode.make(qr_data_sys)
             qr_img_sys.save(qr_path_on_disk_sys)
-            new_product_qr_path = os.path.join('product_qrcodes', qr_filename_sys)
+            new_product_qr_path = os.path.join('icon', qr_filename_sys)
 
             c.execute("""
                 INSERT INTO products (name, product_id_internal, barcode_data, volume_weight, date_added, expiry_date, product_qr_code_path, qty, price) 
@@ -828,6 +828,14 @@ def view_product_details_by_qr(product_internal_id):
     else:
         flash("Không tìm thấy thông tin sản phẩm cho mã QR này.", "danger")
         return render_template('view_product_by_qr.html', product=None)
+@app.route('/quan-ly-san-pham/xuat-kho-qua-quet')
+def pd_xuat_kho_quet_page():
+    if 'username' not in session:
+        return redirect(url_for('login_page'))
+
+    # Tạm thời, chúng ta sẽ render một template cho trang này.
+    # Sau này bạn sẽ cần xây dựng logic xử lý quét mã và trừ sản phẩm khỏi kho ở đây.
+    return render_template('product_dashboard_content_xuatkho_scan.html')
 
 
 # @app.route('/verify-otp', methods=['GET'])

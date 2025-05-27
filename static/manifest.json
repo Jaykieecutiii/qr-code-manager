@@ -1,11 +1,12 @@
 {
-  "name": "Quản lý sản phẩm QR",
+  "name": "Quản lý Sản phẩm QR Code",
   "short_name": "Quản lý QR",
   "description": "Ứng dụng web quản lý sản phẩm sử dụng mã QR Code",
-  "start_url": "/",
+  "start_url": "/quan-ly-san-pham/tong-quan",
   "display": "standalone",
   "background_color": "#f0f2f5",
   "theme_color": "#2F4F4F",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/static/icons/icon-192x192.png",

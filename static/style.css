@@ -1,113 +1,283 @@
-/* =================================== */
-/* ====   NEW DASHBOARD STYLING   ==== */
-/* =================================== */
+/* static/style.css */
+
+/* --- General & Variables --- */
+:root {
+    --header-bg: #2F4F4F; /* Dark Slate Gray */
+    --sidebar-bg: #ffffff;
+    --page-bg: #f0f2f5;
+    --text-light: #ffffff;
+    --text-dark: #333333;
+    --text-muted: #6c757d;
+    --primary-color: #0d6efd;
+    --border-color: #dee2e6;
+
+    --card-tongquan-color: #0d6efd;
+    --card-qlsp-color: #198754;
+    --card-tonkho-color: #ffc107;
+    --card-baocao-color: #0dcaf0;
+}
 
 body {
     font-family: 'Roboto', sans-serif;
-    background-color: #f0f2f5;
+    background-color: var(--page-bg);
     margin: 0;
-    color: #333;
+    color: var(--text-dark);
+    overflow-x: hidden;
 }
 
-/* [THAY ĐỔI 1] LÀM HEADER DÀI HƠN BẰNG CÁCH THU HẸP SIDEBAR */
+/* --- Main Dashboard Layout --- */
 .dashboard-container {
     display: grid;
-    grid-template-columns: 220px 1fr; /* Sidebar từ 240px -> 220px */
-    grid-template-rows: auto 1fr;
+    grid-template-columns: 230px 1fr; /* Sidebar width, Main content takes rest */
+    grid-template-rows: auto 1fr; /* Header auto height, Main content takes rest */
     grid-template-areas:
         "sidebar header"
         "sidebar main";
     height: 100vh;
+    transition: grid-template-columns 0.3s ease-in-out; /* For desktop sidebar collapse if needed */
 }
 
+/* --- Header --- */
 .dashboard-header {
     grid-area: header;
-    background-color: #2F4F4F;
-    color: white;
-    padding: 15px 30px;
+    background-color: var(--header-bg);
+    color: var(--text-light);
+    padding: 12px 25px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    z-index: 10;
+    z-index: 1001; /* Header above sidebar overlay */
 }
-/* ... các style .header-title, .header-user giữ nguyên ... */
+
+.sidebar-toggle {
+    display: none; /* Hidden on desktop by default */
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 0 10px 0 0; /* More space on the right */
+}
+
 .header-title { display: flex; align-items: center; }
-.header-title .logo-icon { font-size: 28px; margin-right: 15px; }
-.header-title h1 { font-size: 22px; margin: 0; font-weight: 500; }
-.header-user { display: flex; align-items: center; font-size: 16px; }
-.header-user .fa-user-circle { margin-right: 8px; font-size: 20px; }
-.header-user a { color: white; margin-left: 20px; font-size: 18px; transition: color 0.2s ease-in-out; }
+.header-title .logo-icon { font-size: 26px; margin-right: 12px; }
+.header-title h1 { font-size: 20px; margin: 0; font-weight: 500; white-space: nowrap; }
+.header-user { display: flex; align-items: center; font-size: 15px; white-space: nowrap; }
+.header-user .fa-user-circle { margin-right: 8px; font-size: 18px; }
+.header-user a { color: var(--text-light); margin-left: 15px; font-size: 17px; transition: color 0.2s; }
 .header-user a:hover { color: #a7c0fd; }
 
-
+/* --- Sidebar --- */
 .dashboard-sidebar {
     grid-area: sidebar;
-    background-color: #ffffff;
+    background-color: var(--sidebar-bg);
     box-shadow: 2px 0 5px rgba(0,0,0,0.05);
-    padding-top: 20px;
-    z-index: 20;
+    padding-top: 15px;
+    overflow-y: auto;
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
 }
-/* ... các style nav giữ nguyên ... */
 .dashboard-sidebar nav ul { list-style: none; padding: 0; margin: 0; }
-.dashboard-sidebar nav li a { display: flex; align-items: center; padding: 15px 25px; color: #495057; text-decoration: none; font-size: 16px; font-weight: 500; transition: background-color 0.2s, color 0.2s; border-left: 4px solid transparent; }
-.dashboard-sidebar nav li a .fas { width: 30px; font-size: 18px; margin-right: 10px; }
-.dashboard-sidebar nav li a:hover { background-color: #e9ecef; }
-.dashboard-sidebar nav li.active a { background-color: #dde6f5; color: #0d6efd; border-left-color: #0d6efd; }
+.dashboard-sidebar nav li.sidebar-item a {
+    display: flex;
+    align-items: center;
+    padding: 14px 25px;
+    color: #495057;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s, border-left-color 0.2s;
+    border-left: 3px solid transparent;
+    white-space: nowrap;
+}
+.dashboard-sidebar nav li.sidebar-item a .fas {
+    width: 22px;
+    font-size: 17px;
+    margin-right: 10px;
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+.dashboard-sidebar nav li.sidebar-item a .arrow {
+    margin-left: auto;
+    font-size: 0.75em;
+    transition: transform 0.3s ease;
+}
+.dashboard-sidebar nav li.sidebar-item.open > a .arrow {
+    transform: rotate(180deg);
+}
+.dashboard-sidebar nav li.sidebar-item a:hover { background-color: #e9ecef; color: var(--text-dark); }
+.dashboard-sidebar nav li.sidebar-item.active > a {
+    background-color: #e7f1ff;
+    color: var(--primary-color);
+    border-left-color: var(--primary-color);
+    font-weight: 600;
+}
+.dashboard-sidebar .submenu {
+    list-style: none;
+    padding-left: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background-color: #f8f9fa;
+}
+.dashboard-sidebar .sidebar-item.open .submenu {
+    max-height: 500px; /* Adjust if more items */
+}
+.dashboard-sidebar .submenu li a {
+    padding: 10px 25px 10px 45px; /* Indent submenu items */
+    font-size: 0.9em;
+    color: #5a6268;
+    border-left: none;
+}
+.dashboard-sidebar .submenu li a:hover { background-color: #e2e6ea; color: #000; }
+.dashboard-sidebar .submenu li.active a {
+    color: var(--primary-color);
+    font-weight: 600;
+    background-color: #dce9fc;
+}
 
-/* [THAY ĐỔI 3] CANH GIỮA CÁC CARD */
+/* --- Main Content Area --- */
 .dashboard-main {
     grid-area: main;
-    padding: 30px;
-    overflow-y: auto;
-    /* Thêm các thuộc tính flexbox để canh giữa */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.overview-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 25px;
-    width: 100%; /* Đảm bảo grid chiếm toàn bộ chiều rộng của main */
-}
-
-.overview-card {
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     padding: 25px;
-    flex: 1 1 250px; /* co giãn linh hoạt */
-    display: flex;
-    flex-direction: column;
-    text-align: center;
-    transition: transform 0.2s, box-shadow 0.2s;
-    border-top: 4px solid #ddd; /* Border mặc định */
+    overflow-y: auto;
 }
-.overview-card:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.12); }
-.overview-card .card-icon .fas { font-size: 32px; margin-bottom: 15px; }
-.overview-card .card-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: #333; }
-.overview-card .card-text { font-size: 15px; color: #6c757d; flex-grow: 1; margin-bottom: 20px; }
-.overview-card .card-actions .btn-action { text-decoration: none; color: #0d6efd; font-weight: 500; display: block; margin-top: 10px; }
-.overview-card .card-actions .btn-action:hover { text-decoration: underline; }
 
+/* --- Overview Cards --- */
+.overview-grid { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; }
+.overview-card {
+    background-color: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 20px; flex: 1 1 260px; display: flex; flex-direction: column;
+    text-align: center; transition: transform 0.2s, box-shadow 0.2s; border-top: 4px solid var(--border-color);
+}
+.overview-card:hover { transform: translateY(-4px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+.overview-card .card-icon .fas { font-size: 30px; margin-bottom: 15px; }
+.overview-card .card-title { font-size: 1.1em; font-weight: 600; margin-bottom: 10px; color: var(--text-dark); }
+.overview-card .card-text { font-size: 0.9em; color: var(--text-muted); flex-grow: 1; margin-bottom: 15px; line-height: 1.5; }
+.overview-card .card-actions .btn-action {
+    text-decoration: none; color: var(--primary-color); font-weight: 500; display: block;
+    padding: 8px 12px; border: 1px solid var(--primary-color); border-radius: 5px;
+    transition: background-color 0.2s, color 0.2s; font-size: 0.9em;
+}
+.overview-card .card-actions .btn-action:not(:last-child) { margin-bottom: 8px; }
+.overview-card .card-actions .btn-action:hover { background-color: var(--primary-color); color: white; }
 
-/* [THAY ĐỔI 2] THÊM MÀU CHO TỪNG CARD */
-.overview-card.card-tongquan { border-top-color: #0d6efd; }
-.overview-card.card-tongquan .card-icon .fas { color: #0d6efd; }
+.overview-card.card-tongquan { border-top-color: var(--card-tongquan-color); }
+.overview-card.card-tongquan .card-icon .fas { color: var(--card-tongquan-color); }
+.overview-card.card-qlsp { border-top-color: var(--card-qlsp-color); }
+.overview-card.card-qlsp .card-icon .fas { color: var(--card-qlsp-color); }
+.overview-card.card-tonkho { border-top-color: var(--card-tonkho-color); }
+.overview-card.card-tonkho .card-icon .fas { color: var(--card-tonkho-color); }
+.overview-card.card-baocao { border-top-color: var(--card-baocao-color); }
+.overview-card.card-baocao .card-icon .fas { color: var(--card-baocao-color); }
 
-.overview-card.card-qlsp { border-top-color: #198754; } /* Xanh lá */
-.overview-card.card-qlsp .card-icon .fas { color: #198754; }
-
-.overview-card.card-tonkho { border-top-color: #ffc107; } /* Vàng */
-.overview-card.card-tonkho .card-icon .fas { color: #ffc107; }
-
-.overview-card.card-baocao { border-top-color: #0dcaf0; } /* Xanh ngọc */
-.overview-card.card-baocao .card-icon .fas { color: #0dcaf0; }
-
-
-/* Alert Styling */
-.alert { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
+/* --- Alert Styling --- */
+.alert {
+    padding: 0.8rem 1rem; margin-bottom: 1rem; border: 1px solid transparent;
+    border-radius: .25rem; width: 100%; max-width: 800px;
+    margin-left: auto; margin-right: auto; box-sizing: border-box;
+}
 .alert-success { color: #0f5132; background-color: #d1e7dd; border-color: #badbcc; }
 .alert-danger { color: #842029; background-color: #f8d7da; border-color: #f5c2c7; }
+.alert-info { color: #055160; background-color: #cff4fc; border-color: #b6effb; }
+.alert-warning { color: #664d03; background-color: #fff3cd; border-color: #ffecb5;}
+
+/* --- Table Responsive --- */
+.table-responsive-mobile {
+    display: block; width: 100%; overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid var(--border-color); border-radius: 5px;
+}
+.table-responsive-mobile table {
+    width: 100%; min-width: 650px; /* Adjust as needed */
+    border-collapse: collapse;
+}
+.table-responsive-mobile th, .table-responsive-mobile td {
+    padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+.table-responsive-mobile th { background-color: #f8f9fa; font-weight: 600; }
+.table-responsive-mobile tr:last-child td { border-bottom: none; }
+
+/* --- Form Elements --- */
+.form-group { margin-bottom: 1rem; }
+.form-label { display: block; margin-bottom: .5rem; font-weight: 500; }
+.form-control {
+    display: block; width: 100%; padding: .5rem .75rem;
+    font-size: 1rem; font-weight: 400; line-height: 1.5;
+    color: var(--text-dark); background-color: #fff;
+    background-clip: padding-box; border: 1px solid var(--border-color);
+    border-radius: .25rem; transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    box-sizing: border-box;
+}
+.form-control:focus {
+    border-color: var(--primary-color);
+    outline: 0;
+    box-shadow: 0 0 0 .2rem rgba(13,110,253,.25);
+}
+.btn {
+    display: inline-block; font-weight: 500; line-height: 1.5;
+    color: var(--text-light); background-color: var(--primary-color);
+    text-align: center; text-decoration: none; vertical-align: middle;
+    cursor: pointer; border: 1px solid var(--primary-color);
+    padding: .5rem 1rem; font-size: 1rem; border-radius: .25rem;
+    transition: background-color .15s ease-in-out, border-color .15s ease-in-out;
+}
+.btn:hover { background-color: var(--primary-darker); border-color: var(--primary-darker); }
+.btn-success { background-color: #198754; border-color: #198754;}
+.btn-success:hover { background-color: #157347; border-color: #146c43;}
+.btn-danger { background-color: #dc3545; border-color: #dc3545;}
+.btn-danger:hover { background-color: #bb2d3b; border-color: #b02a37;}
+
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 992px) {
+    .dashboard-container {
+        grid-template-columns: 1fr; /* Single column layout */
+        grid-template-rows: auto auto 1fr;
+        grid-template-areas:
+            "header"  /* Sidebar toggle will be in header */
+            "main";   /* Main content below header */
+        height: auto; /* Allow page to grow */
+    }
+
+    .sidebar-toggle {
+        display: block; /* Show hamburger */
+    }
+
+    .dashboard-sidebar {
+        position: fixed;
+        left: -260px; /* Hidden off-screen (adjust width + a bit extra) */
+        top: 0;
+        width: 250px; /* Width of the sidebar when it slides out */
+        height: 100%;
+        padding-top: 60px; /* Space for the header if it's fixed */
+        transition: left 0.3s ease-in-out;
+        z-index: 1005; /* Above main content but below potential modal overlays */
+    }
+
+    .dashboard-sidebar.open-mobile {
+        left: 0; /* Slide in */
+    }
+
+    .dashboard-container.sidebar-open-mobile::before { /* Overlay */
+        content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background-color: rgba(0,0,0,0.5); z-index: 1004;
+    }
+
+    .dashboard-main {
+        /* No changes needed for main if sidebar overlays */
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-header { flex-direction: row; /* Keep it row but sidebar-toggle helps */ }
+    .header-title h1 { font-size: 18px; }
+    .header-user span { display: none; } /* Hide "Chào, username" text, only icon */
+    .header-user .fa-user-circle { margin-right: 0; }
+
+    .overview-card { flex-basis: calc(100% - 20px); } /* Ensure one card per row */
+
+    .form-control, .btn { font-size: 0.95rem; }
+}
