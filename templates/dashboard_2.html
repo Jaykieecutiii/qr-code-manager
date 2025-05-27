@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Quản Lý</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        :root {
+            /* Màu sắc "cũ" (Dark theme cho sidebar) */
+            --sidebar-bg: #2c3e50;
+            --sidebar-logo-bg: #1f2b38;
+            --sidebar-text-primary: #ecf0f1;
+            --sidebar-text-secondary: #bdc3c7;
+            --sidebar-icon-primary: #1abc9c;
+            --sidebar-icon-secondary: #7f8c8d;
+            --sidebar-border: #3a4b5f;
+            --sidebar-hover-bg: #34495e;
+            --sidebar-active-border-accent: #1abc9c;
+            --sidebar-active-text: #ffffff;
+            --sidebar-active-icon-accent: #1abc9c;
+
+            --sidebar-highlight-active-bg: #1abc9c;
+            --sidebar-highlight-active-text: #2c3e50;
+
+            --submenu-bg: #263647;
+            --submenu-hover-bg: #3a536b;
+
+            /* Màu sắc cho top nav và content (có thể giữ lại từ theme xanh dương hoặc điều chỉnh) */
+            --top-nav-link-hover-bg: #e9ecef;
+            --top-nav-link-hover-text: #007bff;
+            --top-nav-dropdown-item-hover-bg: #007bff;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif; margin: 0; background-color: #f4f7f6;
+            display: flex; min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px; background-color: var(--sidebar-bg); color: var(--sidebar-text-secondary);
+            padding-top: 0; position: fixed; height: 100%; overflow-y: auto;
+            z-index: 1000; transition: width 0.3s ease;
+        }
+
+        .sidebar .logo {
+            padding: 18px 20px; font-size: 22px; font-weight: 600; color: #ffffff;
+            background-color: var(--sidebar-logo-bg); text-align: center;
+        }
+        .sidebar .logo a { color: #ffffff; text-decoration: none; display: block; }
+        .sidebar .logo .fa-qrcode { margin-right: 8px; color: var(--sidebar-icon-primary); }
+
+        .sidebar nav { padding-top: 10px; }
+        .sidebar nav ul { list-style: none; padding: 0; margin: 0; }
+
+        .sidebar nav > ul > li.sidebar-main-section-header > a {
+            display: flex; align-items: center; padding: 16px 25px;
+            color: var(--sidebar-text-primary); text-decoration: none;
+            transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease;
+            border-left: 4px solid transparent;
+            font-weight: 700;
+            font-size: 1.15em;
+        }
+        .sidebar nav > ul > li.sidebar-main-section-header > a .fa {
+            margin-right: 12px; font-size: 1.2em; width: 20px; text-align: center;
+            color: var(--sidebar-icon-primary);
+        }
+        .sidebar nav > ul > li.sidebar-main-section-header {
+             border-bottom: 2px solid var(--sidebar-border);
+             margin-bottom: 8px;
+        }
+
+        .sidebar nav > ul > li:not(.sidebar-main-section-header) > a {
+            display: flex; align-items: center; padding: 13px 25px;
+            color: var(--sidebar-text-secondary); text-decoration: none;
+            transition: background-color 0.2s ease, color 0.2s ease, border-left-color 0.2s ease;
+            border-left: 4px solid transparent;
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+        .sidebar nav > ul > li:not(.sidebar-main-section-header) > a .fa {
+            margin-right: 12px; font-size: 1em; width: 20px; text-align: center;
+            color: var(--sidebar-icon-secondary);
+        }
+
+        .sidebar nav > ul > li > a:hover,
+        .sidebar nav > ul > li.active > a {
+            background-color: var(--sidebar-hover-bg);
+            color: var(--sidebar-active-text);
+            border-left-color: var(--sidebar-active-border-accent);
+        }
+        .sidebar nav > ul > li.active > a .fa,
+        .sidebar nav > ul > li > a:hover .fa {
+            color: var(--sidebar-active-icon-accent);
+        }
+
+        .sidebar nav > ul > li.sidebar-main-section-header.active > a,
+        .sidebar nav > ul > li.sidebar-main-section-header > a:hover {
+            background-color: var(--sidebar-highlight-active-bg);
+            color: var(--sidebar-highlight-active-text);
+            border-left-color: var(--sidebar-highlight-active-text);
+        }
+        .sidebar nav > ul > li.sidebar-main-section-header.active > a .fa,
+        .sidebar nav > ul > li.sidebar-main-section-header > a:hover .fa {
+             color: var(--sidebar-highlight-active-text);
+        }
+
+        .sidebar nav > ul > li { border-bottom: none; }
+        .sidebar nav > ul > li:not(:last-child):not(.sidebar-main-section-header) {
+             border-bottom: 1px solid var(--sidebar-border);
+        }
+
+        .sidebar .dropdown-toggle::after {
+            content: '\f078'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+            margin-left: auto; transition: transform 0.3s ease; font-size: 0.8em;
+            color: var(--sidebar-icon-secondary);
+        }
+        .sidebar nav > ul > li.active > a .dropdown-toggle::after,
+        .sidebar nav > ul > li > a:hover .dropdown-toggle::after {
+             color: var(--sidebar-active-icon-accent);
+        }
+        .sidebar .dropdown-toggle.open::after { transform: rotate(180deg); }
+
+        .sidebar .dropdown-menu {
+            list-style: none; padding-left: 0; margin:0;
+            background-color: var(--submenu-bg);
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;
+        }
+        .sidebar .dropdown-menu.show { max-height: 500px; }
+
+        .sidebar .dropdown-menu li a {
+            padding: 10px 25px 10px 45px;
+            font-size: 0.9em;
+            border-left: none !important; color: var(--sidebar-text-secondary); font-weight: normal;
+            display: flex; align-items: center;
+        }
+         .sidebar .dropdown-menu li a:hover,
+         .sidebar .dropdown-menu li.active a {
+            background-color: var(--submenu-hover-bg); color: var(--sidebar-active-text) !important;
+         }
+        .sidebar .dropdown-menu li a .fa {
+            margin-right: 10px; font-size: 0.9em;
+            width: 18px; text-align: center;
+            color: var(--sidebar-icon-secondary);
+        }
+        .sidebar .dropdown-menu li.active a .fa,
+        .sidebar .dropdown-menu li a:hover .fa { color: var(--sidebar-active-icon-accent); }
+
+        .sidebar .dropdown-menu .dropdown-parent-sub > a {
+            padding-left: 35px !important;
+            font-size: 0.9em;
+        }
+        .sidebar .dropdown-menu .dropdown-parent-sub .dropdown-menu li a {
+            padding-left: 60px !important;
+            font-size: 0.85em;
+        }
+
+        .main-content { margin-left: 280px; padding: 0; width: calc(100% - 280px); background-color: #f4f7f6; }
+        .header-bar { background-color: #ffffff; padding: 10px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 99; height: 60px; }
+        .header-bar .page-title-container h1 { margin: 0; font-size: 20px; color: #2c3e50; }
+        .header-bar .user-info { display: flex; align-items: center; }
+        .header-bar .user-info span { margin-right: 15px; color: #2c3e50; }
+        .header-bar .user-info a { color: #2c3e50; text-decoration: none; }
+        .header-bar .user-info a:hover { color: #007bff; }
+        .content-area-wrapper { padding: 20px; }
+        .top-nav { margin: 0 20px; }
+        .top-nav ul { list-style: none; padding: 0; margin: 0; display: flex; }
+        .top-nav ul li { position: relative; margin-left: 1px; }
+        .top-nav ul li a { color: #2c3e50; text-decoration: none; padding: 8px 12px; display: block; border-radius: 4px; transition: background-color 0.3s ease, color 0.3s ease; font-size: 0.9em; }
+        .top-nav ul li a:hover, .top-nav ul li.top-dropdown:hover .top-dropdown-toggle, .top-nav ul li.active .top-dropdown-toggle { background-color: var(--top-nav-link-hover-bg); color: var(--top-nav-link-hover-text); }
+        .top-dropdown-menu { display: none; position: absolute; top: 100%; left: 0; background-color: #ffffff; border: 1px solid #ddd; box-shadow: 0 4px 8px rgba(0,0,0,0.1); z-index: 1000; min-width: 200px; padding: 5px 0; border-radius: 0 0 4px 4px; }
+        .top-dropdown:hover .top-dropdown-menu { display: block; }
+        .top-dropdown-menu li { margin-left: 0; width: 100%; }
+        .top-dropdown-menu li a { padding: 8px 15px; color: #333; white-space: nowrap; border-radius: 0; font-size: 0.9em; }
+        .top-dropdown-menu li a:hover { background-color: var(--top-nav-dropdown-item-hover-bg); color: white; }
+        .top-dropdown-toggle .fa-caret-down { margin-left: 5px; font-size: 0.8em; }
+        @media (max-width: 992px) {
+            .sidebar { width: 0; overflow: hidden; padding-top:0; }
+            .sidebar .logo, .sidebar nav { display: none; }
+            .main-content { margin-left: 0; width: 100%; }
+        }
+        @media (max-width: 768px) { .top-nav { display: none; } }
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 20px; }
+        .card-header { font-size: 18px; font-weight: 600; color: #2c3e50; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .alert { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
+        .alert-success { color: #155724; background-color: #d4edda; border-color: #c3e6cb; }
+        .alert-danger { color: #721c24; background-color: #f8d7da; border-color: #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <a href="{{ url_for('user_dashboard_2') }}"><i class="fas fa-qrcode"></i> Quản lí</a>
+        </div>
+        <nav>
+            <ul>
+                <li class="sidebar-main-section-header {% if request.endpoint == 'user_dashboard_2' and not active_sidebar_item %}active{% endif %}">
+                    <a href="{{ url_for('user_dashboard_2') }}"><i class="fas fa-home"></i> Tổng quan</a>
+                </li>
+                <li class="dropdown-parent {% if active_sidebar_item == 'quan_ly_don_hang' %}active open{% endif %}">
+                    <a href="#" class="dropdown-toggle"><i class="fas fa-shopping-cart"></i> Quản lý đơn hàng</a>
+                    <ul class="dropdown-menu {% if active_sidebar_item == 'quan_ly_don_hang' %}show{% endif %}">
+                        <li class="{% if request.endpoint == 'don_hang_xu_ly' %}active{% endif %}"><a href="{{ url_for('don_hang_xu_ly') }}"><i class="fas fa-tasks"></i> Xử Lý Đơn Hàng</a></li>
+                        <li class="dropdown-parent-sub {% if request.endpoint.startswith('don_hang_nhap_') %}active open{% endif %}">
+                             <a href="#" class="dropdown-toggle"><i class="fas fa-plus-circle"></i> Nhập Đơn Hàng</a>
+                             <ul class="dropdown-menu {% if request.endpoint.startswith('don_hang_nhap_') %}show{% endif %}">
+                                <li class="{% if request.endpoint == 'don_hang_nhap_thu_cong' %}active{% endif %}"><a href="{{ url_for('don_hang_nhap_thu_cong') }}"><i class="fas fa-edit"></i> Nhập Thủ Công</a></li>
+                                <li class="{% if request.endpoint == 'don_hang_nhap_dang_order' %}active{% endif %}"><a href="{{ url_for('don_hang_nhap_dang_order') }}"><i class="fas fa-clock"></i> Đang Order</a></li>
+                             </ul>
+                        </li>
+                        <li class="{% if request.endpoint == 'don_hang_gan_qr' %}active{% endif %}"><a href="{{ url_for('don_hang_gan_qr') }}"><i class="fas fa-qrcode"></i> Gắn QR Đơn Hàng</a></li>
+                    </ul>
+                </li>
+                <li class="{% if request.endpoint == 'ton_kho_quan_ly' or active_sidebar_item == 'quan_ly_ton_kho' %}active{% endif %}">
+                    <a href="{{ url_for('ton_kho_quan_ly') }}"><i class="fas fa-boxes-stacked"></i> Quản lý tồn kho</a>
+                </li>
+                <li class="{% if request.endpoint == 'bao_cao_xem' or active_sidebar_item == 'bao_cao' %}active{% endif %}">
+                    <a href="{{ url_for('bao_cao_xem') }}"><i class="fas fa-chart-pie"></i> Báo cáo và thống kê</a>
+                </li>
+                <li class="{% if request.endpoint == 'qr_code' or active_sidebar_item == 'cong_cu_qr' %}active{% endif %}">
+                    <a href="{{ url_for('qr_code') }}"><i class="fas fa-cogs"></i> Công cụ QR Code quản lý sản phẩm</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="header-bar">
+            <div class="page-title-container">
+                <h1>{% block page_title %}{% if request.endpoint == 'user_dashboard_2' %}Bảng điều khiển{% else %}Trang chức năng{% endif %}{% endblock %}</h1>
+            </div>
+            <nav class="top-nav">
+                <ul>
+                    <li class="top-dropdown {% if active_top_nav == 'kho_hang' %}active{% endif %}">
+                        <a href="#" class="top-dropdown-toggle">Quản lí kho hàng <i class="fas fa-caret-down"></i></a>
+                        <ul class="top-dropdown-menu">
+                            <li><a href="{{ url_for('kho_hang_danh_muc', category_slug='dien-tu') }}">Điện tử</a></li>
+                            <li><a href="{{ url_for('kho_hang_danh_muc', category_slug='thiet-bi-gia-dung') }}">Thiết bị gia dụng</a></li>
+                            <li><a href="{{ url_for('kho_hang_danh_muc', category_slug='tap-hoa') }}">Tạp hóa</a></li>
+                            <li><a href="{{ url_for('kho_hang_danh_muc', category_slug='sieu-thi') }}">Siêu thị</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+            <div class="user-info">
+                <span>Chào, {{ session.username }}!</span>
+                <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+            </div>
+        </div>
+        <div class="content-area-wrapper">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+            {% block content %}
+            <div class="card">
+                <div class="card-header">Chào mừng!</div>
+                <p>Chào mừng bạn đến với Bảng điều khiển quản lý.</p>
+                <p>Vui lòng chọn một chức năng từ thanh công cụ bên trái hoặc thanh điều hướng trên cùng để bắt đầu.</p>
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+
+<script>
+// JavaScript giữ nguyên
+document.addEventListener('DOMContentLoaded', function() {
+    var sidebarDropdownToggles = document.querySelectorAll('.sidebar .dropdown-toggle');
+    sidebarDropdownToggles.forEach(function(toggle) {
+        toggle.addEventListener('click', function(event) {
+            event.preventDefault();
+            var parentLi = this.closest('.dropdown-parent, .dropdown-parent-sub');
+            var subMenu = parentLi.querySelector(':scope > .dropdown-menu');
+            if (subMenu) {
+                subMenu.classList.toggle('show');
+                this.classList.toggle('open');
+            }
+        });
+    });
+    function openActiveSidebarMenu() {
+        var activeSidebarItem = document.querySelector('.sidebar nav ul li.active');
+        if (activeSidebarItem) {
+            var parentDropdownMenu = activeSidebarItem.closest('.dropdown-menu');
+            if (parentDropdownMenu) {
+                if (!parentDropdownMenu.classList.contains('show')) {
+                    parentDropdownMenu.classList.add('show');
+                    var toggleForParent = parentDropdownMenu.previousElementSibling;
+                     if (toggleForParent && toggleForParent.classList.contains('dropdown-toggle')) {
+                        toggleForParent.classList.add('open');
+                    }
+                }
+                var grandParentLi = parentDropdownMenu.closest('li.dropdown-parent');
+                if(grandParentLi){
+                    var grandParentMenu = grandParentLi.querySelector(':scope > .dropdown-menu');
+                    var grandParentToggle = grandParentLi.querySelector(':scope > .dropdown-toggle');
+                    if(grandParentMenu && grandParentMenu !== parentDropdownMenu && !grandParentMenu.classList.contains('show')){
+                       if (grandParentMenu === parentDropdownMenu.parentElement.closest('.dropdown-parent > .dropdown-menu')) {
+                           grandParentMenu.classList.add('show');
+                        }
+                    }
+                    if(grandParentToggle && !grandParentToggle.classList.contains('open')){
+                        if (grandParentMenu && grandParentMenu !== parentDropdownMenu) {
+                           grandParentToggle.classList.add('open');
+                        } else if (!grandParentMenu) {
+                            grandParentToggle.classList.add('open');
+                        }
+                    }
+                }
+            }
+        }
+    }
+    openActiveSidebarMenu();
+});
+</script>
+</body>
+</html>

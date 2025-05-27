@@ -1,0 +1,257 @@
+/* static/landing-style.css */
+
+/* --- General & Variables --- */
+:root {
+    --primary-color: #0d6efd;
+    --primary-darker: #0b5ed7;
+    --secondary-color: #6c757d;
+    --header-dark-bg: #2F4F4F;
+    --light-bg: #f8f9fa;
+    --text-dark: #212529;
+    --text-light: #f8f9fa;
+    --border-color: #dee2e6;
+    --font-family: 'Roboto', sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    margin: 0;
+    background-color: #fff;
+    color: var(--text-dark);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.section {
+    padding: 80px 0;
+}
+
+.section.bg-light {
+    background-color: var(--light-bg);
+}
+
+h1, h2, h3 {
+    font-weight: 700;
+}
+
+/* --- Header --- */
+header {
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    padding: 15px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo a {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--header-dark-bg);
+    text-decoration: none;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--secondary-color);
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+nav a:hover {
+    color: var(--primary-color);
+}
+
+.auth-links a {
+    padding: 8px 18px;
+    border: 2px solid var(--primary-color);
+    border-radius: 50px;
+}
+
+.auth-links a:first-child { /* Nút Tạo tài khoản */
+    color: var(--primary-color);
+}
+
+.auth-links a:last-child { /* Nút Đăng nhập */
+    background-color: var(--primary-color);
+    color: #fff;
+    margin-left: 10px;
+}
+
+.auth-links a:last-child:hover {
+    background-color: var(--primary-darker);
+    border-color: var(--primary-darker);
+    color: #fff;
+}
+
+
+/* --- Hero Section --- */
+#hero {
+    background: linear-gradient(45deg, rgba(47, 79, 79, 0.9), rgba(13, 110, 253, 0.8)), url('https://www.toptal.com/designers/subtlepatterns/uploads/double-bubble-outline.png');
+    color: var(--text-light);
+    padding: 120px 0;
+    text-align: center;
+}
+
+#hero h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+}
+
+#hero .sub-headline {
+    font-size: 20px;
+    max-width: 700px;
+    margin: 0 auto;
+    opacity: 0.9;
+}
+
+/* --- Features Section --- */
+#tinh-nang h2 {
+    text-align: center;
+    margin-bottom: 60px;
+    font-size: 36px;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+}
+
+.feature-item {
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.feature-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+.feature-item .fas {
+    font-size: 40px;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+.feature-item h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+/* --- Intro Section --- */
+.intro-row {
+    display: flex;
+    align-items: center;
+    gap: 50px;
+}
+.intro-text {
+    flex: 1;
+}
+#gioi-thieu h2 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+#gioi-thieu ul {
+    list-style: none;
+    padding: 0;
+}
+#gioi-thieu ul li {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+}
+#gioi-thieu ul li::before {
+    content: '\f058'; /* Font Awesome check-circle icon */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    color: #198754; /* Green color for checkmarks */
+    margin-right: 15px;
+    font-size: 20px;
+}
+.button.primary {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 12px 30px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    margin-top: 20px;
+}
+.button.primary:hover {
+    background-color: var(--primary-darker);
+}
+
+
+/* --- Contact Form --- */
+#lien-he h2, #lien-he .section-description {
+    text-align: center;
+}
+#lien-he h2 { font-size: 36px; margin-bottom: 15px; }
+#lien-he .section-description { margin-bottom: 40px; }
+
+.contact-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+.contact-form input, .contact-form textarea {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    font-family: var(--font-family);
+    font-size: 16px;
+}
+.contact-form button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: var(--primary-color);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.contact-form button:hover {
+    background-color: var(--primary-darker);
+}
+
+/* --- Footer --- */
+footer {
+    background-color: var(--header-dark-bg);
+    color: var(--text-light);
+    text-align: center;
+    padding: 30px 0;
+    margin-top: 40px;
+}
+footer p {
+    margin: 0;
+    opacity: 0.8;
+}

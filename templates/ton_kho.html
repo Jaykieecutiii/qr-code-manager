@@ -1,0 +1,38 @@
+{% extends "dashboard_2.html" %}
+
+{% block page_title %}Quản Lý Tồn Kho{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">Thông tin tồn kho sản phẩm</div>
+    <p><em>(Sử dụng lại hoặc cải tiến chức năng từ trang Sales Management của bạn)</em></p>
+    <a href="{{ url_for('sales_management') }}">Đi đến trang quản lý sản phẩm hiện tại</a>
+    <h3>Danh sách sản phẩm trong kho:</h3>
+    {% if products %}
+    <table border="1" style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên Sản phẩm</th>
+                <th>Giá</th>
+                <th>Số lượng</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product[0] }}</td>
+                <td>{{ product[1] }}</td>
+                <td>{{ "{:,.0f}".format(product[2]) if product[2] else 0 }} đ</td>
+                <td>{{ product[3] }}</td>
+                <td><a href="#">Sửa</a> | <a href="#">Xóa</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Chưa có sản phẩm nào trong kho.</p>
+    {% endif %}
+</div>
+{% endblock %}

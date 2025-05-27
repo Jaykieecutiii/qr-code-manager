@@ -1,0 +1,113 @@
+/* =================================== */
+/* ====   NEW DASHBOARD STYLING   ==== */
+/* =================================== */
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    color: #333;
+}
+
+/* [THAY ĐỔI 1] LÀM HEADER DÀI HƠN BẰNG CÁCH THU HẸP SIDEBAR */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 220px 1fr; /* Sidebar từ 240px -> 220px */
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+        "sidebar header"
+        "sidebar main";
+    height: 100vh;
+}
+
+.dashboard-header {
+    grid-area: header;
+    background-color: #2F4F4F;
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+/* ... các style .header-title, .header-user giữ nguyên ... */
+.header-title { display: flex; align-items: center; }
+.header-title .logo-icon { font-size: 28px; margin-right: 15px; }
+.header-title h1 { font-size: 22px; margin: 0; font-weight: 500; }
+.header-user { display: flex; align-items: center; font-size: 16px; }
+.header-user .fa-user-circle { margin-right: 8px; font-size: 20px; }
+.header-user a { color: white; margin-left: 20px; font-size: 18px; transition: color 0.2s ease-in-out; }
+.header-user a:hover { color: #a7c0fd; }
+
+
+.dashboard-sidebar {
+    grid-area: sidebar;
+    background-color: #ffffff;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+    padding-top: 20px;
+    z-index: 20;
+}
+/* ... các style nav giữ nguyên ... */
+.dashboard-sidebar nav ul { list-style: none; padding: 0; margin: 0; }
+.dashboard-sidebar nav li a { display: flex; align-items: center; padding: 15px 25px; color: #495057; text-decoration: none; font-size: 16px; font-weight: 500; transition: background-color 0.2s, color 0.2s; border-left: 4px solid transparent; }
+.dashboard-sidebar nav li a .fas { width: 30px; font-size: 18px; margin-right: 10px; }
+.dashboard-sidebar nav li a:hover { background-color: #e9ecef; }
+.dashboard-sidebar nav li.active a { background-color: #dde6f5; color: #0d6efd; border-left-color: #0d6efd; }
+
+/* [THAY ĐỔI 3] CANH GIỮA CÁC CARD */
+.dashboard-main {
+    grid-area: main;
+    padding: 30px;
+    overflow-y: auto;
+    /* Thêm các thuộc tính flexbox để canh giữa */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.overview-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    width: 100%; /* Đảm bảo grid chiếm toàn bộ chiều rộng của main */
+}
+
+.overview-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    padding: 25px;
+    flex: 1 1 250px; /* co giãn linh hoạt */
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-top: 4px solid #ddd; /* Border mặc định */
+}
+.overview-card:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,0.12); }
+.overview-card .card-icon .fas { font-size: 32px; margin-bottom: 15px; }
+.overview-card .card-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: #333; }
+.overview-card .card-text { font-size: 15px; color: #6c757d; flex-grow: 1; margin-bottom: 20px; }
+.overview-card .card-actions .btn-action { text-decoration: none; color: #0d6efd; font-weight: 500; display: block; margin-top: 10px; }
+.overview-card .card-actions .btn-action:hover { text-decoration: underline; }
+
+
+/* [THAY ĐỔI 2] THÊM MÀU CHO TỪNG CARD */
+.overview-card.card-tongquan { border-top-color: #0d6efd; }
+.overview-card.card-tongquan .card-icon .fas { color: #0d6efd; }
+
+.overview-card.card-qlsp { border-top-color: #198754; } /* Xanh lá */
+.overview-card.card-qlsp .card-icon .fas { color: #198754; }
+
+.overview-card.card-tonkho { border-top-color: #ffc107; } /* Vàng */
+.overview-card.card-tonkho .card-icon .fas { color: #ffc107; }
+
+.overview-card.card-baocao { border-top-color: #0dcaf0; } /* Xanh ngọc */
+.overview-card.card-baocao .card-icon .fas { color: #0dcaf0; }
+
+
+/* Alert Styling */
+.alert { padding: 15px; margin-bottom: 20px; border: 1px solid transparent; border-radius: 4px; }
+.alert-success { color: #0f5132; background-color: #d1e7dd; border-color: #badbcc; }
+.alert-danger { color: #842029; background-color: #f8d7da; border-color: #f5c2c7; }

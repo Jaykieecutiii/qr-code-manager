@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Sản Phẩm</title>
+</head>
+<body>
+    <h1>Quản Lý Sản Phẩm</h1>
+    <form action="/sales" method="POST">
+        <label for="name">Tên sản phẩm:</label>
+        <input type="text" name="name" required>
+
+        <label for="price">Giá:</label>
+        <input type="number" name="price" step="0.01" required>
+
+        <label for="qty">Số lượng:</label>
+        <input type="number" name="qty" required>
+
+        <button type="submit">Thêm sản phẩm</button>
+    </form>
+
+    <h2>Danh sách sản phẩm:</h2>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Tên</th>
+            <th>Giá</th>
+            <th>Số lượng</th>
+        </tr>
+        {% for product in products %}
+        <tr>
+            <td>{{ product[0] }}</td>
+            <td>{{ product[1] }}</td>
+            <td>{{ product[2] }}</td>
+            <td>{{ product[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

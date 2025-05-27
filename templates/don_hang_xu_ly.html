@@ -1,0 +1,39 @@
+{% extends "dashboard_2.html" %}
+
+{% block page_title %}Xử Lý Đơn Hàng{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">Danh sách đơn hàng</div>
+    <p>Đây là nơi hiển thị danh sách các đơn hàng để xử lý.</p>
+    <p><em>(Chức năng sẽ được xây dựng ở đây: bảng đơn hàng, lọc, cập nhật trạng thái...)</em></p>
+    {% if orders %}
+    <table border="1" style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>Mã ĐH</th>
+                <th>Khách hàng</th>
+                <th>Ngày đặt</th>
+                <th>Trạng thái</th>
+                <th>Tổng tiền</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.order_code }}</td>
+                <td>{{ order.customer_name }}</td>
+                <td>{{ order.order_date.strftime('%d-%m-%Y %H:%M') if order.order_date else '' }}</td>
+                <td>{{ order.status }}</td>
+                <td>{{ "{:,.0f}".format(order.total_amount) if order.total_amount else 0 }} đ</td>
+                <td><a href="#">Xem</a> | <a href="#">Sửa</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>Chưa có đơn hàng nào.</p>
+    {% endif %}
+</div>
+{% endblock %}

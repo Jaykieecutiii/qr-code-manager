@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập Hệ Thống</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .login-container {
+            background: #fff;
+            padding: 35px 45px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+        .login-container h2 {
+            color: #337ab7;
+            margin-bottom: 30px;
+            font-size: 26px;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #444;
+            font-size: 15px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .form-group input[type="text"]:focus,
+        .form-group input[type="password"]:focus {
+            border-color: #80bdff;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        .login-button {
+            background-color: #337ab7;
+            color: white;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 17px;
+            font-weight: 600;
+            width: 100%;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+        .login-button:hover {
+            background-color: #286090;
+        }
+        .error-message {
+            color: #d9534f;
+            background-color: #f2dede;
+            border: 1px solid #ebccd1;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            text-align: left;
+        }
+        .extra-links {
+            margin-top: 25px;
+            font-size: 0.95em;
+        }
+        .extra-links p {
+            margin-bottom: 8px;
+        }
+        .extra-links a {
+            color: #337ab7;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .extra-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Đăng Nhập Hệ Thống</h2>
+        {% if error %}
+            <p class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</p>
+        {% endif %}
+        <form method="POST" action="{{ url_for('login_page') }}">
+            <div class="form-group">
+                <label for="username">Tên tài khoản:</label>
+                <input type="text" id="username" name="username" required value="{{ username_value if username_value else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="password">Mật khẩu:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="login-button">Đăng nhập</button>
+        </form>
+        <div class="extra-links">
+            <p>Bạn chưa có tài khoản? <a href="{{ url_for('register') }}">Tạo tài khoản mới</a></p>
+            <p><a href="{{ url_for('index') }}">Quay lại trang chủ</a></p>
+        </div>
+    </div>
+
+</body>
+</html>

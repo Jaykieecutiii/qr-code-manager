@@ -1,0 +1,100 @@
+{% extends "product_dashboard_layout.html" %}
+
+{% block page_specific_title %}Nhập Dữ Liệu Mã QR{% endblock %}
+
+{% block product_dashboard_content %}
+<div class="card">
+    <div class="card-header">
+        <h4><i class="fas fa-keyboard"></i> Nhập Dữ Liệu Từ Mã QR</h4>
+    </div>
+    <div class="card-body">
+        <p>Do bạn chưa có webcam, hãy nhập hoặc dán trực tiếp nội dung (text) bạn muốn hệ thống xử lý như thể nó được quét từ một mã QR.</p>
+        
+        <form id="manual-qr-input-form" class="mt-3">
+            <div class="mb-3">
+                <label for="qr_data_manual" class="form-label"><strong>Dữ liệu mã QR:</strong></label>
+                <textarea class="form-control" id="qr_data_manual" name="qr_data_manual" rows="3" required placeholder="Ví dụ: ProductID_Internal:123456, Name:Sản phẩm ABC... hoặc một URL"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Gửi Dữ Liệu</button>
+        </form>
+
+        <div id="scan-results" style="margin-top: 25px; padding: 15px; border: 1px dashed #ccc; border-radius: 4px; min-height: 100px; background-color: #f9f9f9;">
+            <p style="color: #777;">Kết quả xử lý từ server sẽ hiển thị ở đây.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const manualForm = document.getElementById('manual-qr-input-form');
+        const manualInput = document.getElementById('qr_data_manual');
+        const resultsDiv = document.getElementById('scan-results');
+
+        if (manualForm && manualInput && resultsDiv) {
+            manualForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Ngăn form submit theo cách truyền thống
+                const manualDecodedText = manualInput.value.trim();
+
+                if (manualDecodedText) {
+                    resultsDiv.innerHTML = `<p>Đang gửi dữ liệu: <strong>${manualDecodedText}</strong>...</p>`;
+                    
+                    fetch("{{ url_for('process_scanned_qr_data') }}", { // Route này trong app.py không đổi
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            // Nếu có CSRF token, bạn cần thêm vào đây nếu Flask-WTF được sử dụng
+                        },
+                        body: JSON.stringify({ qr_data: manualDecodedText })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            // Nếu server trả về lỗi (4xx, 5xx), thử đọc lỗi dưới dạng text hoặc json
+                            return response.json().then(errData => Promise.reject(errData));
+                        }
+                        return response.json();
+                    })
+                    .then(dataFromServer => {
+                        console.log('Phản hồi từ server:', dataFromServer);
+                        let resultsHtml = `<p style="font-weight:bold; color: green;">Phản hồi từ server:</p>`;
+                        
+                        if (dataFromServer.error) {
+                            resultsHtml += `<p style="color:red;">Lỗi: ${dataFromServer.error}</p>`;
+                        } else {
+                            resultsHtml += `<p><strong>Thông điệp:</strong> ${dataFromServer.message || 'Thành công!'}</p>`;
+                            if (dataFromServer.product_name) {
+                                resultsHtml += `<p><strong>Sản phẩm tìm thấy:</strong> ${dataFromServer.product_name}</p>`;
+                            }
+                            if (dataFromServer.product_id_internal) {
+                                resultsHtml += `<p><strong>ID Nội bộ:</strong> ${dataFromServer.product_id_internal}</p>`;
+                            }
+                            if (dataFromServer.scanned_data) {
+                                resultsHtml += `<p><strong>Dữ liệu đã gửi:</strong> ${dataFromServer.scanned_data}</p>`;
+                            }
+                            if (dataFromServer.new_qr_image_path) {
+                                resultsHtml += `<h4>Mã QR mới của hệ thống (nếu có):</h4>
+                                                <img src="${dataFromServer.new_qr_image_path}" 
+                                                     alt="Mã QR mới cho sản phẩm" 
+                                                     style="max-width: 150px; border: 1px solid #ccc; padding: 3px; margin-top: 5px;">
+                                                <p><small>Dữ liệu mã hóa trong QR mới: ${dataFromServer.new_qr_data_content || ''}</small></p>`;
+                            }
+                        }
+                        resultsDiv.innerHTML = resultsHtml;
+                    })
+                    .catch((error) => {
+                        console.error('Lỗi khi gửi hoặc xử lý dữ liệu:', error);
+                        let errorMessage = "Lỗi không xác định khi giao tiếp với server.";
+                        if (error && error.error) { // Nếu server trả về JSON lỗi có trường 'error'
+                            errorMessage = error.error;
+                        } else if (typeof error === 'string') {
+                            errorMessage = error;
+                        }
+                        resultsDiv.innerHTML = `<p style="color: red; font-weight:bold;">Lỗi: ${errorMessage}</p>`;
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<p style="color: orange;">Vui lòng nhập dữ liệu mã QR.</p>';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

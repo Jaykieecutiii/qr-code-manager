@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đổi Tên File</title>
+</head>
+<body>
+    <h1>Đổi Tên Các Tệp</h1>
+    <form action="/rename" method="POST">
+        <label for="folder">Nhập thư mục:</label>
+        <input type="text" name="folder" required>
+        <label for="prefix">Nhập tiền tố:</label>
+        <input type="text" name="prefix" required>
+        <button type="submit">Đổi tên</button>
+    </form>
+
+    {% if new_files %}
+    <h2>Các tệp đã được đổi tên:</h2>
+    <ul>
+        {% for file in new_files %}
+        <li>{{ file }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if error %}
+    <p style="color:red">{{ error }}</p>
+    {% endif %}
+</body>
+</html>

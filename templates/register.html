@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng ký tài khoản</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(to right, #e3f2fd, #ffffff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .form-box {
+            background: #ffffff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 {
+            text-align: center;
+            color: #0288d1;
+        }
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: 600;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            background: #0288d1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .captcha-image {
+            display: block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-box">
+        <h2>Đăng ký tài khoản</h2>
+
+        <p class="error">{{ error }}</p>
+
+        <form method="POST">
+            <label>Tên người dùng:</label>
+            <input type="text" name="username" value="{{ username_value }}" required>
+
+            <label>Email:</label>
+            <input type="email" name="email" value="{{ email_value }}" required>
+
+            <label>Số điện thoại:</label>
+            <input type="tel" name="phone" value="{{ phone_value }}" required>
+
+            <label>Mật khẩu:</label>
+            <input type="password" name="password" required>
+
+            <label>Nhập lại mật khẩu:</label>
+            <input type="password" name="confirm_password" required>
+
+            <label>Mã Captcha:</label>
+            <img src="{{ url_for('captcha') }}" alt="captcha" class="captcha-image"><br>
+            <input type="text" name="captcha" required>
+
+            <button type="submit">Tạo tài khoản</button>
+        </form>
+    </div>
+</body>
+</html>

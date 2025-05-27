@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+
+    <meta name="theme-color" content="#2F4F4F">
+
+    <title>{% block page_specific_title %}Quản lý Sản phẩm{% endblock %}</title>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="header-title">
+                <i class="fas fa-qrcode logo-icon"></i>
+                <h1>Quản lý sản phẩm</h1>
+            </div>
+            <div class="header-user">
+                {% if session.username %}
+                    <i class="fas fa-user-circle"></i>
+                    <span>Chào, <strong>{{ session.username }}</strong></span>
+                    <a href="{{ url_for('logout') }}" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a>
+                {% endif %}
+            </div>
+        </header>
+
+        <aside class="dashboard-sidebar">
+            <nav>
+                <ul>
+                    <li class="{{ 'active' if request.endpoint == 'product_dashboard_overview' or request.endpoint == 'product_dashboard_overview_detail' else '' }}">
+                        <a href="{{ url_for('product_dashboard_overview') }}"><i class="fas fa-tachometer-alt"></i><span>Tổng quan</span></a>
+                    </li>
+                    <li class="{{ 'active' if request.endpoint in ['pd_nhap_kho_quet_page', 'pd_nhap_san_pham_moi'] else '' }}">
+                        <a href="{{ url_for('pd_nhap_kho_quet_page') }}"><i class="fas fa-barcode-read"></i><span>Nhập kho</span></a>
+                    </li>
+                    <li class="{{ 'active' if request.endpoint in ['pd_don_hang_xu_ly', 'pd_don_hang_nhap', 'pd_don_hang_gan_qr'] else '' }}">
+                        <a href="{{ url_for('pd_don_hang_xu_ly') }}"><i class="fas fa-shipping-fast"></i><span>Đơn hàng</span></a>
+                    </li>
+                    <li class="{{ 'active' if request.endpoint == 'pd_ton_kho_quan_ly' else '' }}">
+                        <a href="{{ url_for('pd_ton_kho_quan_ly') }}"><i class="fas fa-boxes-stacked"></i><span>Tồn kho</span></a>
+                    </li>
+                    <li class="{{ 'active' if request.endpoint == 'pd_bao_cao_xem' else '' }}">
+                        <a href="{{ url_for('pd_bao_cao_xem') }}"><i class="fas fa-chart-pie"></i><span>Báo cáo</span></a>
+                    </li>
+                    <li class="{{ 'active' if request.endpoint == 'pd_user_profile' else '' }}">
+                        <a href="{{ url_for('pd_user_profile') }}"><i class="fas fa-user-cog"></i><span>Tài khoản</span></a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="dashboard-main">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block product_dashboard_content %}
+            {% endblock %}
+        </main>
+    </div>
+</div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}")
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
+</body>
+</html>

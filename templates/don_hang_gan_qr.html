@@ -1,0 +1,28 @@
+{% extends "dashboard_2.html" %}
+
+{% block page_title %}Gắn QR Cho Đơn Hàng{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">Gán Mã QR cho Đơn Hàng</div>
+    <p>Chọn đơn hàng để tạo và hiển thị mã QR.</p>
+    <p><em>(Chức năng sẽ được xây dựng ở đây: danh sách đơn hàng, nút tạo QR, hiển thị QR)</em></p>
+
+    <h3>Tạo QR Code cho đơn hàng (Ví dụ)</h3>
+    <form method="POST" action="{{ url_for('don_hang_gan_qr') }}">
+        <label for="order_id_for_qr">ID Đơn hàng:</label>
+        <input type="number" name="order_id_for_qr" id="order_id_for_qr" placeholder="Nhập ID đơn hàng">
+        <button type="submit" name="action" value="generate_qr">Tạo QR</button>
+    </form>
+
+    {% if qr_image_path and order_id_processed %}
+    <h4>QR Code cho Đơn hàng ID: {{ order_id_processed }}</h4>
+    <img src="{{ url_for('static', filename=qr_image_path) }}" alt="QR Code cho đơn {{ order_id_processed }}" style="max-width: 200px;">
+    <p><small>Lưu ý: Mã QR này hiện đang lưu thông tin đơn giản. Cần điều chỉnh để chứa thông tin hữu ích hơn.</small></p>
+    {% endif %}
+
+    {% if message %}
+        <p style="color: red;">{{ message }}</p>
+    {% endif %}
+</div>
+{% endblock %}

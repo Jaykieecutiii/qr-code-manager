@@ -1,0 +1,36 @@
+{% extends "dashboard_2.html" %}
+
+{% block page_title %}Nhập Đơn Hàng Thủ Công{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">Nhập thông tin đơn hàng mới</div>
+    <form method="POST" action="{{ url_for('don_hang_nhap_thu_cong') }}">
+        <p>
+            <label for="customer_name">Tên khách hàng:</label><br>
+            <input type="text" id="customer_name" name="customer_name" required>
+        </p>
+        <p>
+            <label for="customer_phone">Số điện thoại:</label><br>
+            <input type="text" id="customer_phone" name="customer_phone">
+        </p>
+        <p>
+            <label for="customer_address">Địa chỉ:</label><br>
+            <textarea id="customer_address" name="customer_address" rows="3" style="width:90%;"></textarea>
+        </p>
+        <p>
+            <label for="notes">Ghi chú:</label><br>
+            <textarea id="notes" name="notes" rows="3" style="width:90%;"></textarea>
+        </p>
+        <hr>
+        <h4>Chi tiết sản phẩm:</h4>
+        <p><em>(Phần nhập chi tiết sản phẩm sẽ được phát triển sau. Tạm thời chỉ nhập thông tin chung của đơn.)</em></p>
+        <p>
+            <label for="total_amount">Tổng tiền (ước tính):</label><br>
+            <input type="number" id="total_amount" name="total_amount" step="1000" value="0">
+        </p>
+
+        <button type="submit">Lưu Đơn Hàng</button>
+    </form>
+</div>
+{% endblock %}
