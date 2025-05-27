@@ -140,9 +140,11 @@ def login_page():
 def generate_otp(length=6):
     return "".join(random.choices(string.digits, k=length))
 
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     error = ''
+    # Giữ lại việc truyền giá trị cũ của form nếu có lỗi
     form_data = {
         'username': request.form.get('username', ''),
         'email': request.form.get('email', ''),
@@ -158,9 +160,14 @@ def register():
         captcha_input = request.form['captcha']
         captcha_session = session.get('captcha_code', '')
 
+        # Validate form data (giữ nguyên các validation của bạn)
         if password != confirm_password: error = 'Mật khẩu không khớp.'
         elif len(password) < 8: error = 'Mật khẩu phải có ít nhất 8 ký tự.'
-
+        # ... (các validation khác cho password, ví dụ: chữ hoa, ký tự đặc biệt) ...
+        elif not re.search(r'[A-Z]', password): # Ví dụ: phải có chữ hoa
+            error = 'Mật khẩu phải chứa ít nhất một chữ cái viết hoa.'
+        elif not re.search(r'[!@#$%^&*(),.?":{}|<>]', password): # Ví dụ: phải có ký tự đặc biệt
+            error = 'Mật khẩu phải chứa ít nhất một ký tự đặc biệt.'
         elif captcha_input.upper() != captcha_session.upper(): error = 'Mã captcha không đúng.'
         else:
             c.execute("SELECT id FROM users WHERE username=? OR email=?", (username, email))
@@ -169,44 +176,32 @@ def register():
                 error = 'Tên người dùng hoặc email đã tồn tại.'
             else:
                 try:
-                    hashed_password = generate_password_hash(password)
-                    otp = generate_otp()
-
-                    session['registration_data'] = {
-                        'username': username,
-                        'email': email,
-                        'phone': phone,
-                        'password': hashed_password
-                    }
-                    session['otp'] = otp
-                    session['otp_email'] = email
-
-                    msg = Message('Mã Xác Thực Tài Khoản - Quản lý QR',
-                                  recipients=[email])
-                    msg.body = f'Chào {username},\n\nMã OTP để xác thực tài khoản của bạn là: {otp}\n\nMã này sẽ có hiệu lực trong 10 phút.\n\nTrân trọng,\nĐội ngũ Quản lý QR'
-                    msg.html = f'''
-                        <p>Chào {username},</p>
-                        <p>Cảm ơn bạn đã đăng ký tài khoản tại Quản lý QR.</p>
-                        <p>Mã OTP để xác thực tài khoản của bạn là: <strong>{otp}</strong></p>
-                        <p>Mã này sẽ có hiệu lực trong 10 phút.</p>
-                        <p>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.</p>
-                        <p>Trân trọng,<br>Đội ngũ Quản lý QR</p>
-                    '''
-                    mail.send(msg)
-
-                    flash('Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra và nhập mã để hoàn tất đăng ký.', 'info')
-                    return redirect(url_for('verify_otp_page')) # Chuyển đến trang nhập OTP
-
+                    hashed_password = generate_password_hash(password) # Mã hóa mật khẩu
+                    # Thêm is_verified=1 để tài khoản được coi là đã xác thực (vì bỏ qua bước OTP)
+                    c.execute(
+                        "INSERT INTO users (username, email, phone, password, is_verified) VALUES (?, ?, ?, ?, ?)",
+                        (username, email, phone, hashed_password, 1) # is_verified = 1
+                    )
+                    conn.commit()
+                    session['username'] = username # Đăng nhập cho người dùng
+                    flash('Đăng ký thành công! Bạn đã được đăng nhập.', 'success')
+                    return redirect(url_for('product_dashboard_overview'))
+                except sqlite3.IntegrityError:
+                    error = 'Tên người dùng hoặc email đã tồn tại (lỗi CSDL).'
+                    conn.rollback()
                 except Exception as e:
-                    app.logger.error(f"Registration/OTP Send error: {e}")
-                    error = f'Lỗi trong quá trình đăng ký hoặc gửi email: {str(e)}'
+                    error = f'Lỗi trong quá trình đăng ký: {str(e)}'
+                    app.logger.error(f"Registration error: {e}")
+                    conn.rollback()
 
-
-        if error:
+        # Nếu có lỗi, hiển thị lại form với thông báo và captcha mới
+        if error: # Chỉ tạo captcha mới nếu có lỗi và cần render lại trang
             new_captcha_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
             session['captcha_code'] = new_captcha_code
             return render_template('register.html', error=error, form_data=form_data)
 
+
+    # Cho GET request hoặc nếu có lỗi ở POST mà chưa redirect
     new_captcha_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
     session['captcha_code'] = new_captcha_code
     return render_template('register.html', error=error, form_data=form_data)
@@ -835,93 +830,23 @@ def view_product_details_by_qr(product_internal_id):
         return render_template('view_product_by_qr.html', product=None)
 
 
-@app.route('/verify-otp', methods=['GET'])
-def verify_otp_page():
-    if 'registration_data' not in session or 'otp' not in session or 'otp_email' not in session:
-        flash('Dữ liệu đăng ký không hợp lệ hoặc phiên đã hết hạn. Vui lòng thử đăng ký lại.', 'danger')
-        return redirect(url_for('register'))
-    return render_template('verify_otp.html')
+# @app.route('/verify-otp', methods=['GET'])
+# def verify_otp_page():
+#     # ... (code cũ)
+#     return render_template('verify_otp.html') # Bạn cũng cần xóa file templates/verify_otp.html
 
+# @app.route('/verify-otp', methods=['POST'])
+# def verify_otp_submit():
+#     # ... (code cũ)
+#     pass # Nội dung hàm này không cần thiết nữa
 
-@app.route('/verify-otp', methods=['POST'])
-def verify_otp_submit():
-    if 'registration_data' not in session or 'otp' not in session or 'otp_email' not in session:
-        flash('Phiên làm việc hết hạn hoặc dữ liệu không hợp lệ. Vui lòng thử đăng ký lại.', 'danger')
-        return redirect(url_for('register'))
-
-    user_otp = request.form.get('otp_code')
-    stored_otp = session.get('otp')
-    registration_data = session.get('registration_data')
-
-
-    if user_otp == stored_otp:
-        try:
-            c.execute("SELECT id FROM users WHERE username=? OR email=?",
-                      (registration_data['username'], registration_data['email']))
-            if c.fetchone():
-                flash(
-                    'Tên người dùng hoặc email đã được sử dụng bởi một tài khoản đã xác thực khác trong lúc bạn xác thực OTP.',
-                    'danger')
-                # Xóa session để tránh lỗi
-                session.pop('registration_data', None)
-                session.pop('otp', None)
-                session.pop('otp_email', None)
-                return redirect(url_for('register'))
-
-            c.execute(
-                "INSERT INTO users (username, email, phone, password, is_verified) VALUES (?, ?, ?, ?, ?)",
-                (registration_data['username'], registration_data['email'],
-                 registration_data['phone'], registration_data['password'], 1)  # is_verified = 1
-            )
-            conn.commit()
-
-            session.pop('registration_data', None)
-            session.pop('otp', None)
-            session.pop('otp_email', None)
-
-            session['username'] = registration_data['username']
-            flash('Đăng ký và xác thực tài khoản thành công! Bạn đã được đăng nhập.', 'success')
-            return redirect(url_for('product_dashboard_overview'))
-        except sqlite3.IntegrityError:
-            flash('Lỗi CSDL: Tên người dùng hoặc email đã tồn tại.', 'danger')
-            return redirect(url_for('register'))
-        except Exception as e:
-            app.logger.error(f"OTP Verification error: {e}")
-            flash(f'Lỗi không xác định trong quá trình xác thực: {str(e)}', 'danger')
-            return redirect(url_for('register'))
-    else:
-        flash('Mã OTP không chính xác. Vui lòng thử lại.', 'danger')
-        return render_template('verify_otp.html')
-
-
-@app.route('/resend-otp')
-def resend_otp():
-    if 'registration_data' not in session or 'otp_email' not in session:
-        flash('Không thể gửi lại OTP. Vui lòng thử đăng ký lại.', 'danger')
-        return redirect(url_for('register'))
-
-    try:
-        email = session['otp_email']
-        username = session['registration_data']['username']
-        new_otp = generate_otp()
-        session['otp'] = new_otp
-
-        msg = Message('Mã Xác Thực Tài Khoản Mới - Quản lý QR',
-                      recipients=[email])
-        msg.body = f'Chào {username},\n\nMã OTP mới để xác thực tài khoản của bạn là: {new_otp}\n\nMã này sẽ có hiệu lực trong 10 phút.\n\nTrân trọng,\nĐội ngũ Quản lý QR'
-
-        mail.send(msg)
-
-        flash('Mã OTP mới đã được gửi đến email của bạn.', 'info')
-    except Exception as e:
-        app.logger.error(f"Resend OTP error: {e}")
-        flash(f'Lỗi khi gửi lại OTP: {str(e)}', 'danger')
-
-    return redirect(url_for('verify_otp_page'))
+# @app.route('/resend-otp')
+# def resend_otp():
+#     # ... (code cũ)
+#     pass # Nội dung hàm này không cần thiết nữa
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
-
 
 
 
