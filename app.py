@@ -26,9 +26,11 @@ app.secret_key = 'your_very_secret_and_complex_key_here_CHANGE_ME'
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'DIA_CHI_EMAIL_CUA_BAN@gmail.com'
-app.config['MAIL_PASSWORD'] = 'vtzsijkjjlrmxnby'
-app.config['MAIL_DEFAULT_SENDER'] = ('Tên Ứng Dụng Của Bạn', app.config['MAIL_USERNAME'])
+app.config['MAIL_USERNAME'] = os.environ.get('GMAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('GMAIL_APP_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = ('Quản lý QR', app.config['MAIL_USERNAME'])
+
+print(f"--- INFO: Mail username set to: {os.environ.get('GMAIL_USERNAME')} ---")
 
 mail = Mail(app)
 
