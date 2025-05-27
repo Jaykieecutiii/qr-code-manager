@@ -255,3 +255,136 @@ footer p {
     margin: 0;
     opacity: 0.8;
 }
+@media (max-width: 991.98px) {
+    header .container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    nav ul {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px 20px; /* Giảm khoảng cách dọc và ngang */
+    }
+    .auth-links {
+        margin-top: 10px; /* Tạo khoảng cách nếu menu xuống hàng */
+    }
+
+    #hero h1 {
+        font-size: 36px;
+    }
+    #hero .sub-headline {
+        font-size: 18px;
+    }
+
+    .features-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .intro-row {
+        flex-direction: column;
+        text-align: center; /* Canh giữa text khi thành 1 cột */
+    }
+    .intro-text ul {
+        text-align: left; /* Giữ list canh trái cho dễ đọc */
+        padding-left: 20px; /* Thêm padding nếu cần */
+    }
+    .intro-visual {
+        margin-top: 30px; /* Tạo khoảng cách */
+    }
+}
+
+/* --- Cho màn hình Điện thoại (ví dụ: dưới 768px) --- */
+@media (max-width: 767.98px) {
+    .logo a {
+        font-size: 22px;
+    }
+    nav ul {
+        gap: 8px 15px;
+    }
+    nav a {
+        font-size: 15px; /* Giảm kích thước chữ menu */
+    }
+    .auth-links a {
+        padding: 6px 14px;
+        font-size: 14px;
+    }
+
+    #hero {
+        padding: 80px 0;
+    }
+    #hero h1 {
+        font-size: 30px;
+    }
+    #hero .sub-headline {
+        font-size: 16px;
+    }
+
+    .section {
+        padding: 60px 0;
+    }
+
+    h2 { /* Tiêu đề các section */
+        font-size: 28px;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr; /* Mỗi feature một hàng */
+    }
+    .feature-item {
+        padding: 25px;
+    }
+
+    #gioi-thieu h2, #lien-he h2 {
+        font-size: 28px;
+    }
+    #gioi-thieu ul li::before {
+        font-size: 18px; /* Giảm kích thước icon check */
+        margin-right: 10px;
+    }
+}
+
+/* --- Cho màn hình Điện thoại Rất nhỏ (ví dụ: dưới 576px) --- */
+@media (max-width: 575.98px) {
+    header .container {
+        align-items: center; /* Canh giữa logo và nav khi thành 1 cột */
+    }
+    nav ul {
+        flex-direction: column; /* Menu xếp dọc hoàn toàn */
+        gap: 15px;
+    }
+    .auth-links {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 250px; /* Giới hạn chiều rộng nút */
+        margin-top: 15px;
+    }
+    .auth-links a {
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box; /* Để padding không làm tăng width */
+    }
+     .auth-links a:last-child {
+        margin-left: 0;
+        margin-top: 10px; /* Khoảng cách giữa 2 nút */
+    }
+
+    #hero h1 {
+        font-size: 26px;
+    }
+    #hero .sub-headline {
+        font-size: 15px;
+    }
+
+    h2 {
+        font-size: 24px;
+    }
+    #gioi-thieu h2, #lien-he h2 {
+        font-size: 24px;
+    }
+
+    .contact-form input, .contact-form textarea, .contact-form button {
+        font-size: 15px;
+        padding: 12px;
+    }
+}
