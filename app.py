@@ -19,7 +19,7 @@ def generate_internal_product_id():
     return str(random.randint(100000, 999999))
 
 
-app = Flask(__name__, template_folder='D:/my_flask_app/templates', static_folder='D:/my_flask_app/static')
+app = Flask(__name__)
 app.secret_key = 'your_very_secret_and_complex_key_here_CHANGE_ME'
 
 conn = sqlite3.connect('sales.db', check_same_thread=False)
