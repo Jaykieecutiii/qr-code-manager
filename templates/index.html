@@ -12,7 +12,7 @@
     <div class="mobile-sidebar" id="mobileSidebar">
         <div class="mobile-sidebar-header">
             <h2 class="mobile-sidebar-title">Quản Lý QR</h2>
-            <button class="close-sidebar-btn" id="closeSidebarBtn">&times;</button>
+            <button class="close-sidebar-btn" id="closeSidebarBtn" aria-label="Đóng menu">&times;</button>
         </div>
         <nav class="mobile-sidebar-nav">
             <ul>
@@ -31,7 +31,7 @@
 
     <header class="landing-header">
         <div class="container">
-            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu">
                 <i class="fas fa-ellipsis-v"></i> </button>
 
             <div class="logo">
@@ -54,13 +54,74 @@
     </header>
 
     <section id="hero">
-        </section>
+        <div class="container">
+            <div class="hero-content">
+                <h1>Giải pháp quản lý sản phẩm bằng QR Code hiệu quả</h1>
+                <p class="sub-headline">Nâng cao hiệu suất, theo dõi dễ dàng, và tối ưu hóa quy trình kinh doanh của bạn.</p>
+            </div>
+        </div>
+    </section>
+
     <section id="tinh-nang" class="section">
-        </section>
+        <div class="container">
+            <h2>Các tính năng nổi bật</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <i class="fas fa-qrcode"></i>
+                    <h3>Quản lý mã QR</h3>
+                    <p>Tạo, in và quản lý mã QR dễ dàng.</p>
+                </div>
+                <div class="feature-item">
+                     <i class="fas fa-boxes"></i>
+                    <h3>Quản lý kho hàng</h3>
+                    <p>Theo dõi số lượng, vị trí và trạng thái sản phẩm.</p>
+                </div>
+                 <div class="feature-item">
+                     <i class="fas fa-chart-bar"></i>
+                    <h3>Báo cáo và thống kê</h3>
+                    <p>Xem báo cáo chi tiết về sản phẩm và kho hàng.</p>
+                </div>
+                 <div class="feature-item">
+                     <i class="fas fa-handshake"></i>
+                    <h3>Tích hợp dễ dàng</h3>
+                    <p>Kết nối với các hệ thống khác của bạn.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="gioi-thieu" class="section bg-light">
-        </section>
+        <div class="container">
+            <div class="intro-row">
+                <div class="intro-text">
+                    <h2>Tại sao bạn nên chọn quản lý sản phẩm bằng QR Code?</h2>
+                    <p>Khám phá những lợi ích vượt trội mà hệ thống quản lý sản phẩm bằng QR Code mang lại cho doanh nghiệp của bạn...</p>
+                    <ul>
+                        <li><strong>Theo dõi chính xác và theo thời gian thực:</strong> Dễ dàng cập nhật vị trí, trạng thái và thông tin chi tiết của từng sản phẩm ngay lập tức.</li>
+                        <li><strong>Tiết kiệm thời gian và chi phí:</strong> Giảm thiểu các công việc thủ công trong kiểm kê, quản lý kho và theo dõi sản phẩm.</li>
+                        <li><strong>Nâng cao tính minh bạch và truy xuất nguồn gốc:</strong> Cung cấp thông tin đầy đủ về sản phẩm, từ nhà sản xuất đến người tiêu dùng, tăng cường niềm tin.</li>
+                    </ul>
+                    <a href="#lien-he" class="button primary learn-more-link">Tìm hiểu thêm</a>
+                </div>
+                <div class="intro-visual">
+                    </div>
+            </div>
+        </div>
+    </section>
+
     <section id="lien-he" class="section">
-        </section>
+        <div class="container">
+            <h2>Liên hệ với chúng tôi</h2>
+            <p class="section-description">Bạn có câu hỏi hoặc muốn trải nghiệm thử phần mềm? Hãy liên hệ ngay!</p>
+            <form class="contact-form" action="#" method="POST">
+                <input type="text" name="contact_name" placeholder="Tên của bạn" required>
+                <input type="email" name="contact_email" placeholder="Địa chỉ email" required>
+                <textarea name="contact_message" placeholder="Nội dung tin nhắn" required></textarea>
+                <button type="submit" class="button primary">Gửi tin nhắn</button>
+            </form>
+        </div>
+    </section>
+
     <footer>
         <div class="container">
             <p>&copy; 2025 Quản lý QR. All rights reserved.</p>
@@ -68,10 +129,9 @@
     </footer>
 
     <script>
-        // JavaScript cho smooth scroll và mobile sidebar giữ nguyên như lần trước
         document.addEventListener('DOMContentLoaded', function() {
-            // Smooth scroll cho các link anchor (bao gồm cả link trong mobile sidebar)
-            document.querySelectorAll('header nav a[href^="#"], .mobile-sidebar-nav a[href^="#"]').forEach(anchor => {
+            // Smooth scroll cho các link anchor (bao gồm cả link trong mobile sidebar và nút "Tìm hiểu thêm")
+            document.querySelectorAll('header.landing-header nav a[href^="#"], .mobile-sidebar-nav a[href^="#"], .learn-more-link[href^="#"]').forEach(anchor => {
                 if (anchor.getAttribute('href') !== '#') { // Bỏ qua các link chỉ có href="#"
                     anchor.addEventListener('click', function (e) {
                         e.preventDefault();
@@ -83,8 +143,9 @@
                             });
                         }
                         // Đóng sidebar sau khi nhấn link (nếu đang mở và nếu đó là link trong mobile sidebar)
-                        if (this.classList.contains('mobile-nav-link') && document.getElementById('mobileSidebar').classList.contains('open')) {
-                            document.getElementById('mobileSidebar').classList.remove('open');
+                        const mobileSidebar = document.getElementById('mobileSidebar');
+                        if (this.classList.contains('mobile-nav-link') && mobileSidebar.classList.contains('open')) {
+                            mobileSidebar.classList.remove('open');
                             document.getElementById('mobileSidebarOverlay').classList.remove('open');
                             document.body.classList.remove('no-scroll');
                         }
