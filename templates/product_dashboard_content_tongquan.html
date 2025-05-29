@@ -1,8 +1,40 @@
 {% extends "product_dashboard_layout.html" %}
 
-{% block page_specific_title %}Tổng quan Hệ Thống{% endblock %}
+{% block page_specific_title %}Bảng điều khiển chính{% endblock %}
 
 {% block product_dashboard_content %}
-    {# Nội dung sẽ được layout.html xử lý khi endpoint là product_dashboard_overview #}
-    {# Hoặc bạn có thể thêm một thông điệp tùy chỉnh khác ở đây nếu muốn #}
+<div class="category-column-grid">
+    <a href="{{ url_for('manage_category_placeholder', category_slug='thoi-trang') }}" class="category-column-card">
+        <img src="https://file.hstatic.net/1000253775/file/hoi-trang-nam-tai-ha-noi-360-boutique_279e611939e5435b976f72e211d9178a.jpg" alt="Quản lý Thời trang" class="category-card-image">
+        <div class="category-card-overlay">
+            <h3 class="category-card-title">Quản lý Thời trang</h3>
+        </div>
+    </a>
+
+    <a href="{{ url_for('manage_category_placeholder', category_slug='gia-dung') }}" class="category-column-card">
+        <img src="https://blog.dktcdn.net/files/nguon-hang-do-gia-dung-gia-re-1-e1507186249781.jpg" alt="Quản lý Đồ gia dụng" class="category-card-image">
+        <div class="category-card-overlay">
+            <h3 class="category-card-title">Quản lý Đồ gia dụng</h3>
+        </div>
+    </a>
+
+    <a href="{{ url_for('manage_category_placeholder', category_slug='sieu-thi') }}" class="category-column-card">
+        <img src="https://luatthanhthai.vn/wp-content/uploads/2023/12/sieu-thi-mini.jpg" alt="Quản lý Hàng Siêu thị" class="category-card-image">
+        <div class="category-card-overlay">
+            <h3 class="category-card-title">Quản lý Hàng Siêu thị</h3>
+        </div>
+    </a>
+
+    <a href="{{ url_for('manage_category_placeholder', category_slug='may-tinh-linh-kien') }}" class="category-column-card">
+        <img src="https://maytinhgiaredanang.com/wp-content/uploads/2024/04/ve-sinh-may-tinh-pc-tai-da-nang.jpg" alt="Máy tính & Linh kiện" class="category-card-image">
+        <div class="category-card-overlay">
+            <h3 class="category-card-title">Máy tính & Linh kiện</h3>
+        </div>
+    </a>
+</div>
+
+<div class="welcome-message" style="text-align: center; padding-top: 20px; margin-top: 20px;">
+    <p style="font-size: 1.1em; color: var(--text-muted);">Chọn một danh mục sản phẩm để bắt đầu quản lý, hoặc <a href="{{ url_for('product_dashboard_overview_detail') }}">xem tổng quan hệ thống chi tiết</a>.</p>
+</div>
+
 {% endblock %}

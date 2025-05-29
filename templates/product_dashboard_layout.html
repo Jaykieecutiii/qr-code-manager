@@ -2,26 +2,44 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#2F4F4F"> <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2F4F4F">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Quản lý QR">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <title>{% block page_specific_title %}Quản lý Sản phẩm{% endblock %}</title>
+    <style>
+    :root {
+        --category-background-image: {% if category_bg_image %}url('{{ category_bg_image | e }}'){% else %}none{% endif %};
+        /* Giải thích:
+           - Nếu category_bg_image tồn tại, nó sẽ gán ví dụ: --category-background-image: url('https://link_den_anh.jpg');
+           - Nếu category_bg_image KHÔNG tồn tại, nó sẽ gán: --category-background-image: none;
+           - Bộ lọc `| e` (hoặc `| escape`) là để đảm bảo URL ảnh được escape đúng cách, tránh lỗi XSS tiềm ẩn.
+        */
+    }
+    </style>
+    <title>{% block page_specific_title %}Quản lý sản phẩm{% endblock %}</title>
 </head>
 <body>
     <div class="dashboard-container">
         <header class="dashboard-header">
-            <button class="sidebar-toggle" id="sidebarToggle" aria-label="Mở menu">
-                <i class="fas fa-bars"></i>
-            </button>
+            <button class="sidebar-toggle desktop-only-element" id="sidebarToggleDesktop" aria-label="Mở/Đóng menu desktop">
+                <i class="fas fa-bars"></i> </button>
             <div class="header-title">
                 <i class="fas fa-qrcode logo-icon"></i>
-                <h1>Quản lý sản phẩm</h1>
+                <h1>
+                    Quản lý sản phẩm
+                    {% if category_display_name %}
+                        - {{ category_display_name }}
+                    {% elif page_specific_title and page_specific_title != "Bảng điều khiển chính" and page_specific_title != "Tổng quan Hệ Thống" %}
+                        - {% block header_page_title %}{{ self.page_specific_title() }}{% endblock %}
+                    {% endif %}
+                </h1>
             </div>
             <div class="header-user">
                 {% if session.username %}
@@ -34,33 +52,34 @@
             </div>
         </header>
 
-        <aside class="dashboard-sidebar" id="dashboardSidebar">
+        <aside class="dashboard-sidebar desktop-only-element" id="dashboardSidebar">
             <nav>
                 <ul>
-                    <li class="sidebar-item {{ 'active' if request.endpoint == 'product_dashboard_overview' or request.endpoint == 'product_dashboard_overview_detail' else '' }}">
-                        <a href="{{ url_for('product_dashboard_overview_detail') }}"><i class="fas fa-tachometer-alt"></i><span>Tổng quan</span></a>
+                    <li class="sidebar-item {{ 'active' if request.endpoint == 'product_dashboard_overview' else '' }}">
+                        <a href="{{ url_for('product_dashboard_overview') }}"><i class="fas fa-th-large"></i><span>Danh mục lựa chọn</span></a>
                     </li>
-                    <li class="sidebar-item has-submenu {{ 'active' if request.endpoint in ['pd_nhap_kho_quet_page', 'pd_nhap_san_pham_moi'] else '' }}">
-                        <a href="#"><i class="fas fa-dolly-flatbed"></i><span>Nhập/Xuất Kho</span> <i class="fas fa-angle-down arrow"></i></a>
+                    <li class="sidebar-item has-submenu {{ 'active' if request.endpoint in ['pd_nhap_kho_quet_page', 'pd_nhap_san_pham_moi', 'pd_xuat_kho_quet_page'] else '' }}">
+                        <a href="#"><i class="fas fa-exchange-alt"></i><span>Nhập/Xuất Kho</span> <i class="fas fa-angle-down arrow"></i></a>
                         <ul class="submenu">
                             <li><a href="{{ url_for('pd_nhap_kho_quet_page') }}">Nhập kho bằng quét mã</a></li>
-                            <li><a href="{{ url_for('pd_nhap_san_pham_moi') }}">Xuất kho bằng mã  </a></li>
+                            <li><a href="{{ url_for('pd_nhap_san_pham_moi') }}">Nhập sản phẩm mới</a></li>
+                            <li><a href="{{ url_for('pd_xuat_kho_quet_page') }}">Xuất kho bằng mã</a></li>
                         </ul>
                     </li>
                     <li class="sidebar-item {{ 'active' if request.endpoint == 'pd_ton_kho_quan_ly' else '' }}">
                         <a href="{{ url_for('pd_ton_kho_quan_ly') }}"><i class="fas fa-boxes-stacked"></i><span>Tồn kho</span></a>
                     </li>
                     <li class="sidebar-item {{ 'active' if request.endpoint == 'pd_bao_cao_xem' else '' }}">
-                        <a href="{{ url_for('pd_bao_cao_xem') }}"><i class="fas fa-chart-pie"></i><span>Báo cáo</span></a>
+                        <a href="{{ url_for('pd_bao_cao_xem') }}"><i class="fas fa-chart-line"></i><span>Doanh thu</span></a>
                     </li>
-                    <li class="sidebar-item {{ 'active' if request.endpoint == 'pd_user_profile' else '' }}">
+                    <li class="sidebar-item sidebar-item-bottom {{ 'active' if request.endpoint == 'pd_user_profile' else '' }}">
                         <a href="{{ url_for('pd_user_profile') }}"><i class="fas fa-user-cog"></i><span>Tài khoản</span></a>
                     </li>
                 </ul>
             </nav>
         </aside>
 
-        <main class="dashboard-main">
+        <main class="dashboard-main" id="dashboardMainContent">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -70,25 +89,33 @@
             {% endwith %}
 
             {% block product_dashboard_content %}
-                {% if request.endpoint == 'product_dashboard_overview' %}
-                    <div class="welcome-message" style="text-align: center; padding-top: 50px;">
-                        <h2>Chào mừng đến với Hệ thống Quản lý Sản phẩm!</h2>
-                        <p>Vui lòng chọn một mục từ thanh điều hướng bên trái để bắt đầu.</p>
-                    </div>
-                {% endif %}
-            {% endblock %}
+                {% endblock %}
         </main>
+
+        <nav class="mobile-bottom-nav mobile-only-element">
+            <a href="{{ url_for('product_dashboard_overview') }}" class="nav-item {{ 'active' if request.endpoint == 'product_dashboard_overview' else '' }}">
+                <i class="fas fa-th-large"></i>
+                <span class="nav-text">Danh mục</span>
+            </a>
+            <a href="{{ url_for('pd_nhap_kho_quet_page') }}" class="nav-item nav-item-main {{ 'active' if request.endpoint == 'pd_nhap_kho_quet_page' else '' }}">
+                <i class="fas fa-qrcode"></i>
+                <span class="nav-text">Quét Mã</span>
+            </a>
+            <a href="{{ url_for('product_dashboard_overview_detail') }}" class="nav-item {{ 'active' if request.endpoint == 'product_dashboard_overview_detail' else '' }}">
+                <i class="fas fa-chart-bar"></i> <span class="nav-text">Thống Kê</span>
+            </a>
+        </nav>
     </div>
 
     <script>
+    // JavaScript để xử lý đóng mở submenu desktop (nếu dùng click)
     document.addEventListener('DOMContentLoaded', function() {
-        const sidebarItemsWithSubmenu = document.querySelectorAll('.sidebar-item.has-submenu > a');
+        const sidebarItemsWithSubmenu = document.querySelectorAll('.dashboard-sidebar .sidebar-item.has-submenu > a');
         sidebarItemsWithSubmenu.forEach(item => {
             item.addEventListener('click', function(event) {
                 event.preventDefault();
                 const parentLi = this.parentElement;
-                // Đóng tất cả các submenu khác trước khi mở submenu hiện tại
-                document.querySelectorAll('.sidebar-item.has-submenu.open').forEach(openItem => {
+                document.querySelectorAll('.dashboard-sidebar .sidebar-item.has-submenu.open').forEach(openItem => {
                     if (openItem !== parentLi) {
                         openItem.classList.remove('open');
                     }
@@ -97,39 +124,22 @@
             });
         });
 
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const dashboardSidebar = document.getElementById('dashboardSidebar');
-        const dashboardContainer = document.querySelector('.dashboard-container');
-        const dashboardMain = document.querySelector('.dashboard-main');
-
-        if (sidebarToggle && dashboardSidebar) {
-            sidebarToggle.addEventListener('click', function() {
-                dashboardSidebar.classList.toggle('open-mobile');
-                dashboardContainer.classList.toggle('sidebar-open-mobile');
-            });
-        }
-
-        // Đóng sidebar khi click vào main content trên mobile
-        if (dashboardMain && dashboardSidebar.classList.contains('open-mobile')) {
-            dashboardMain.addEventListener('click', function() {
-                if (dashboardSidebar.classList.contains('open-mobile')) {
-                    dashboardSidebar.classList.remove('open-mobile');
-                    dashboardContainer.classList.remove('sidebar-open-mobile');
-                }
-            });
-        }
+        // (Tùy chọn) JS cho nút thu gọn sidebar desktop (nếu bạn làm)
+        // const sidebarToggleDesktop = document.getElementById('sidebarToggleDesktop');
+        // const dashboardContainer = document.querySelector('.dashboard-container');
+        // if (sidebarToggleDesktop) {
+        //     sidebarToggleDesktop.addEventListener('click', function() {
+        //         dashboardContainer.classList.toggle('sidebar-collapsed');
+        //     });
+        // }
     });
     </script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}")
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(err => {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
+                    .then(registration => { /* console.log('SW registered'); */ })
+                    .catch(err => { /* console.log('SW registration failed: ', err); */ });
             });
         }
     </script>
