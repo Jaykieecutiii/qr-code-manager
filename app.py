@@ -551,36 +551,64 @@ def process_and_log_scan():
         conn.rollback()
         return jsonify({'error': f'Lỗi server: {str(e)}'}), 500
 
+
+# Trong app.py
 @app.route('/api/get-product-info-from-scan', methods=['POST'])
 def get_product_info_from_scan():
-    if 'username' not in session:
-        return jsonify({'error': 'Chưa đăng nhập'}), 401
+    if 'username' not in session:  # Đảm bảo người dùng đã đăng nhập
+        return jsonify({'error': 'Chưa đăng nhập hoặc phiên hết hạn'}), 401
 
     data = request.get_json()
     scanned_data = data.get('scanned_data')
 
     if not scanned_data:
-        return jsonify({'error': 'Không có dữ liệu mã quét'}), 400
+        return jsonify({'error': 'Không nhận được dữ liệu mã quét'}), 400
 
-    app.logger.info(f"API: Get product info for scanned_data: {scanned_data}")
+    app.logger.info(f"API: Yêu cầu thông tin sản phẩm cho mã quét: {scanned_data}")
+
+    # Tra cứu sản phẩm trong bảng products
+    # Ưu tiên tìm theo product_id_internal, sau đó là barcode_data, cuối cùng có thể thử tìm theo name
+    # (Thứ tự này quan trọng nếu scanned_data có thể là nhiều loại)
     c.execute("""
-        SELECT id, name 
+        SELECT id, name, product_id_internal, barcode_data, price, qty, category, expiry_date 
         FROM products 
-        WHERE product_id_internal = ? OR barcode_data = ? OR name = ? 
-    """, (scanned_data, scanned_data, scanned_data)) # Thêm tìm theo tên nếu mã QR chứa tên
+        WHERE product_id_internal = ? OR barcode_data = ?
+    """, (scanned_data, scanned_data))
     product = c.fetchone()
 
     if product:
-        app.logger.info(f"API: Product found: id={product[0]}, name={product[1]}")
-        return jsonify({
-            'success': True,
+        product_details = {
             'product_id': product[0],
-            'product_name': product[1]
-
-        }), 200
+            'product_name': product[1],
+            'product_id_internal': product[2],
+            'barcode_data': product[3],
+            'price': product[4],
+            'qty': product[5],
+            'category': product[6],
+            'expiry_date': product[7].strftime('%Y-%m-%d') if product[7] else None
+            # Thêm các trường khác nếu bạn muốn hiển thị
+        }
+        app.logger.info(f"API: Sản phẩm được tìm thấy: {product_details}")
+        return jsonify(product_details), 200  # Trả về toàn bộ thông tin sản phẩm
     else:
-        app.logger.info(f"API: Product not found for scanned_data: {scanned_data}")
-        return jsonify({'error': 'Sản phẩm không tồn tại trong hệ thống'}), 404
+        # Nếu không tìm thấy bằng ID hoặc barcode, thử tìm theo tên (nếu mã QR chứa tên)
+        c.execute("""
+            SELECT id, name, product_id_internal, barcode_data, price, qty, category, expiry_date 
+            FROM products 
+            WHERE name = ?
+        """, (scanned_data,))
+        product_by_name = c.fetchone()
+        if product_by_name:
+            product_details = {
+                'product_id': product_by_name[0],
+                'product_name': product_by_name[1],
+                # ... các trường khác ...
+            }
+            app.logger.info(f"API: Sản phẩm được tìm thấy theo tên: {product_details}")
+            return jsonify(product_details), 200
+        else:
+            app.logger.warning(f"API: Không tìm thấy sản phẩm cho mã quét: {scanned_data}")
+            return jsonify({'error': 'Sản phẩm không tồn tại trong hệ thống'}), 404
 
 
 @app.route('/api/update-inventory-and-log', methods=['POST'])
