@@ -6,6 +6,7 @@
     </content>
     <orderEntry type="jdk" jdkName="Python 3.13 (my_flask_app)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="html5-qrcode" level="application" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_FOLDERS">

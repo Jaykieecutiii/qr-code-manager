@@ -22,169 +22,419 @@
             --danger-action-color: #dc3545;
             --qr-box-height: 180px; /* Giá trị mặc định, sẽ được JS cập nhật */
         }
-        html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; background-color: var(--scanner-bg); color: var(--scanner-text-light); font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .scan-container { display: flex; flex-direction: column; height: 100%; width: 100%; position: relative; }
-        .scan-header { display: flex; align-items: center; padding: 12px 15px; background-color: rgba(28, 28, 30, 0.85); backdrop-filter: blur(5px); position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 56px; box-sizing: border-box; }
-        .scan-header .back-button { color: var(--scanner-text-light); font-size: 22px; text-decoration: none; margin-right: 15px; padding: 5px; }
-        .scan-header .title { font-size: 17px; font-weight: 500; }
-        .scan-header .flashlight-button { margin-left: auto; color: var(--scanner-text-light); font-size: 20px; background: none; border: none; cursor: pointer; padding: 5px; }
-        .camera-viewport-container { flex-grow: 1; position: absolute; top: 56px; bottom: 70px; left: 0; right: 0; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        #qr-reader { width: 100%; height: 100%; background-color: #000; }
-        #qr-reader video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
-        .scan-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none; }
-        .scan-region-text { background-color: rgba(0,0,0,0.7); padding: 6px 12px; border-radius: 15px; font-size: 13px; margin-bottom: 15px; color: var(--scanner-text-light); }
-        .scan-box { width: 65vw; max-width: 280px; max-height: 220px; border: 2px solid var(--scanner-highlight); box-shadow: 0 0 0 2000px rgba(0,0,0,0.6); position: relative; border-radius: 8px; } /* height sẽ được JS đặt */
-        .scan-box .laser { width: 100%; background: linear-gradient(to bottom, transparent, var(--scanner-highlight), transparent); height: 3px; position: absolute; top: 0; left: 0; opacity: 0.8; box-shadow: 0 0 5px var(--scanner-highlight); animation: scan-laser 2.5s infinite linear; }
-        @keyframes scan-laser { 0% { transform: translateY(5%); } 50% { transform: translateY(calc(var(--qr-box-height, 180px) - 8px)); } 100% { transform: translateY(5%); } }
-        .scan-footer { position: fixed; bottom: 0; left: 0; right: 0; padding: 10px 15px; background-color: rgba(28, 28, 30, 0.85); backdrop-filter: blur(5px); display: flex; justify-content: space-around; align-items: center; height: 70px; box-sizing: border-box; z-index: 100; }
-        .scan-footer-button { display: flex; flex-direction: column; align-items: center; color: var(--scanner-text-light); text-decoration: none; font-size: 11px; background: none; border: none; cursor: pointer; padding: 5px; opacity: 0.8; transition: opacity 0.2s; }
-        .scan-footer-button:hover { opacity: 1; }
-        .scan-footer-button i { font-size: 22px; margin-bottom: 4px; }
-        .scan-actions-container { position: fixed; bottom: 85px; left: 10px; right: 10px; background-color: rgba(40, 40, 42, 0.97); color: var(--scanner-text-light); padding: 15px; border-radius: 12px; box-shadow: 0 -3px 15px rgba(0,0,0,0.4); z-index: 90; text-align: center; transition: transform 0.3s ease-out, opacity 0.3s ease-out; transform: translateY(120%); opacity: 0; pointer-events: none; /* Ẩn ban đầu và không cho tương tác */ }
-        .scan-actions-container.visible { transform: translateY(0); opacity: 1; pointer-events: auto; }
-        .scan-actions-container p { margin-top: 0; margin-bottom: 12px; font-size: 15px; }
-        .scan-actions-container strong { font-weight: 500; }
-        .scan-actions-container .action-buttons { display: flex; justify-content: space-around; margin-bottom: 15px; gap: 10px;}
-        .scan-actions-container .btn-action { background-color: var(--primary-action-color); color: white; border: none; padding: 10px 15px; border-radius: 6px; font-size: 14px; cursor: pointer; flex: 1; font-weight: 500; transition: background-color 0.2s; }
-        .scan-actions-container .btn-action.btn-export { background-color: var(--danger-action-color); }
-        .scan-actions-container .btn-action:hover { opacity: 0.85; }
-        .scan-actions-container .quantity-form { margin-top: 15px; }
-        .scan-actions-container .quantity-form label { display: block; margin-bottom: 6px; font-size: 13px; }
-        .scan-actions-container .quantity-form div { display: flex; align-items: center; justify-content: center; }
-        .scan-actions-container .quantity-form input[type="number"] { width: 70px; padding: 8px; border-radius: 4px; border: 1px solid var(--scanner-text-muted); text-align: center; margin-right: 10px; background-color: #3a3a3c; color: var(--scanner-text-light); }
-        #action-status { margin-top: 12px; font-size: 13px; min-height: 18px; }
-        .hidden { display: none !important; } /* Giữ lại class này */
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: var(--scanner-bg);
+            color: var(--scanner-text-light);
+            font-family: 'Roboto', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .scan-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+
+        .scan-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background-color: rgba(28, 28, 30, 0.85);
+            backdrop-filter: blur(5px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            height: 56px;
+            box-sizing: border-box;
+        }
+
+        .scan-header .back-button {
+            color: var(--scanner-text-light);
+            font-size: 22px;
+            text-decoration: none;
+            margin-right: 15px;
+            padding: 5px;
+        }
+
+        .scan-header .title {
+            font-size: 17px;
+            font-weight: 500;
+        }
+
+        .scan-header .flashlight-button {
+            margin-left: auto;
+            color: var(--scanner-text-light);
+            font-size: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .camera-viewport-container {
+            flex-grow: 1;
+            position: absolute;
+            top: 56px;
+            bottom: 70px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #qr-reader {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+        }
+
+        #qr-reader video {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: cover !important;
+        }
+
+        .scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .scan-region-text {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            color: var(--scanner-text-light);
+        }
+
+        .scan-box {
+            width: 65vw;
+            max-width: 280px;
+            max-height: 220px;
+            border: 2px solid var(--scanner-highlight);
+            box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.6);
+            position: relative;
+            border-radius: 8px;
+        }
+
+        /* height sẽ được JS đặt */
+        .scan-box .laser {
+            width: 100%;
+            background: linear-gradient(to bottom, transparent, var(--scanner-highlight), transparent);
+            height: 3px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0.8;
+            box-shadow: 0 0 5px var(--scanner-highlight);
+            animation: scan-laser 2.5s infinite linear;
+        }
+
+        @keyframes scan-laser {
+            0% {
+                transform: translateY(5%);
+            }
+            50% {
+                transform: translateY(calc(var(--qr-box-height, 180px) - 8px));
+            }
+            100% {
+                transform: translateY(5%);
+            }
+        }
+
+        .scan-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 10px 15px;
+            background-color: rgba(28, 28, 30, 0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 70px;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+
+        .scan-footer-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--scanner-text-light);
+            text-decoration: none;
+            font-size: 11px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .scan-footer-button:hover {
+            opacity: 1;
+        }
+
+        .scan-footer-button i {
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        .scan-actions-container {
+            position: fixed;
+            bottom: 85px;
+            left: 10px;
+            right: 10px;
+            background-color: rgba(40, 40, 42, 0.97);
+            color: var(--scanner-text-light);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 -3px 15px rgba(0, 0, 0, 0.4);
+            z-index: 90;
+            text-align: center;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            transform: translateY(120%);
+            opacity: 0;
+            pointer-events: none; /* Ẩn ban đầu và không cho tương tác */
+        }
+
+        .scan-actions-container.visible {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .scan-actions-container p {
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .scan-actions-container strong {
+            font-weight: 500;
+        }
+
+        .scan-actions-container .action-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .scan-actions-container .btn-action {
+            background-color: var(--primary-action-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            flex: 1;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .scan-actions-container .btn-action.btn-export {
+            background-color: var(--danger-action-color);
+        }
+
+        .scan-actions-container .btn-action:hover {
+            opacity: 0.85;
+        }
+
+        .scan-actions-container .quantity-form {
+            margin-top: 15px;
+        }
+
+        .scan-actions-container .quantity-form label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+
+        .scan-actions-container .quantity-form div {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scan-actions-container .quantity-form input[type="number"] {
+            width: 70px;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid var(--scanner-text-muted);
+            text-align: center;
+            margin-right: 10px;
+            background-color: #3a3a3c;
+            color: var(--scanner-text-light);
+        }
+
+        #action-status {
+            margin-top: 12px;
+            font-size: 13px;
+            min-height: 18px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Giữ lại class này */
     </style>
 </head>
 <body>
-    <div class="scan-container">
-        <header class="scan-header">
-            <a href="javascript:history.back()" class="back-button"><i class="fas fa-arrow-left"></i></a>
-            <span class="title">Quét mã sản phẩm</span>
-            <button class="flashlight-button" id="flashlightToggle"><i class="fas fa-lightbulb"></i></button>
-        </header>
+<div class="scan-container">
+    <header class="scan-header">
+        <a href="javascript:history.back()" class="back-button"><i class="fas fa-arrow-left"></i></a>
+        <span class="title">Quét mã sản phẩm</span>
+        <button class="flashlight-button" id="flashlightToggle"><i class="fas fa-lightbulb"></i></button>
+    </header>
 
-        <div class="camera-viewport-container">
-            <div id="qr-reader">
-                </div>
-            <div class="scan-overlay">
-                <div class="scan-region-text">Di chuyển camera vào mã</div>
-                <div class="scan-box" id="scanBox">
-                    <div class="laser"></div>
-                </div>
+    <div class="camera-viewport-container">
+        <div id="qr-reader">
+        </div>
+        <div class="scan-overlay">
+            <div class="scan-region-text">Di chuyển camera vào mã</div>
+            <div class="scan-box" id="scanBox">
+                <div class="laser"></div>
             </div>
         </div>
-
-        <div id="scan-result-and-actions" class="scan-actions-container"> <p id="scanned-product-name"><strong>Sản phẩm:</strong> <span></span></p>
-            <p id="scanned-code-display"><strong>Mã quét:</strong> <span></span></p>
-            <hr style="border-color: rgba(255,255,255,0.1); margin: 12px 0;">
-            <p>Thực hiện thao tác:</p>
-            <div class="action-buttons">
-                <button class="btn-action" id="btnNhapHang">Nhập hàng</button>
-                <button class="btn-action btn-export" id="btnXuatHang">Xuất hàng</button>
-            </div>
-            <div id="formNhapHang" class="quantity-form hidden">
-                <label for="quantityNhap">Số lượng NHẬP:</label>
-                <div>
-                    <input type="number" id="quantityNhap" name="quantityNhap" min="1" value="1">
-                    <button class="btn-action" id="btnConfirmNhap">OK</button>
-                </div>
-            </div>
-            <div id="formXuatHang" class="quantity-form hidden">
-                <label for="quantityXuat">Số lượng XUẤT:</label>
-                <div>
-                    <input type="number" id="quantityXuat" name="quantityXuat" min="1" value="1">
-                    <button class="btn-action btn-export" id="btnConfirmXuat">OK</button>
-                </div>
-            </div>
-            <p id="action-status"></p>
-        </div>
-
-        <footer class="scan-footer">
-            <button class="scan-footer-button" id="uploadImageBtn">
-                <i class="fas fa-image"></i>
-                <span>Tải ảnh</span>
-            </button>
-            <button class="scan-footer-button" id="rescanBtn" style="display: none;">
-                <i class="fas fa-sync-alt"></i>
-                <span>Quét lại</span>
-            </button>
-        </footer>
     </div>
 
-    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const qrReaderElement = document.getElementById('qr-reader');
-            const scanResultAndActionsDiv = document.getElementById('scan-result-and-actions');
-            const scannedProductNameEl = document.querySelector('#scanned-product-name span');
-            const scannedCodeDisplayEl = document.querySelector('#scanned-code-display span');
-            const actionStatusEl = document.getElementById('action-status');
+    <div id="scan-result-and-actions" class="scan-actions-container"><p id="scanned-product-name"><strong>Sản
+        phẩm:</strong> <span></span></p>
+        <p id="scanned-code-display"><strong>Mã quét:</strong> <span></span></p>
+        <hr style="border-color: rgba(255,255,255,0.1); margin: 12px 0;">
+        <p>Thực hiện thao tác:</p>
+        <div class="action-buttons">
+            <button class="btn-action" id="btnNhapHang">Nhập hàng</button>
+            <button class="btn-action btn-export" id="btnXuatHang">Xuất hàng</button>
+        </div>
+        <div id="formNhapHang" class="quantity-form hidden">
+            <label for="quantityNhap">Số lượng NHẬP:</label>
+            <div>
+                <input type="number" id="quantityNhap" name="quantityNhap" min="1" value="1">
+                <button class="btn-action" id="btnConfirmNhap">OK</button>
+            </div>
+        </div>
+        <div id="formXuatHang" class="quantity-form hidden">
+            <label for="quantityXuat">Số lượng XUẤT:</label>
+            <div>
+                <input type="number" id="quantityXuat" name="quantityXuat" min="1" value="1">
+                <button class="btn-action btn-export" id="btnConfirmXuat">OK</button>
+            </div>
+        </div>
+        <p id="action-status"></p>
+    </div>
 
-            const btnNhapHang = document.getElementById('btnNhapHang');
-            const btnXuatHang = document.getElementById('btnXuatHang');
-            const formNhapHang = document.getElementById('formNhapHang');
-            const formXuatHang = document.getElementById('formXuatHang');
-            const quantityNhapInput = document.getElementById('quantityNhap');
-            const quantityXuatInput = document.getElementById('quantityXuat');
-            const btnConfirmNhap = document.getElementById('btnConfirmNhap');
-            const btnConfirmXuat = document.getElementById('btnConfirmXuat');
+    <footer class="scan-footer">
+        <button class="scan-footer-button" id="uploadImageBtn">
+            <i class="fas fa-image"></i>
+            <span>Tải ảnh</span>
+        </button>
+        <button class="scan-footer-button" id="rescanBtn" style="display: none;">
+            <i class="fas fa-sync-alt"></i>
+            <span>Quét lại</span>
+        </button>
+    </footer>
+</div>
 
-            const flashlightToggle = document.getElementById('flashlightToggle');
-            const uploadImageBtn = document.getElementById('uploadImageBtn');
-            const rescanBtn = document.getElementById('rescanBtn');
-            const scanBox = document.getElementById('scanBox'); // Tham chiếu đến div scan-box
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const qrReaderElement = document.getElementById('qr-reader');
+        const scanResultAndActionsDiv = document.getElementById('scan-result-and-actions');
+        const scannedProductNameEl = document.querySelector('#scanned-product-name span');
+        const scannedCodeDisplayEl = document.querySelector('#scanned-code-display span');
+        const actionStatusEl = document.getElementById('action-status');
 
-            let html5QrCode; // Sẽ được khởi tạo trong startScan
-            let isFlashlightOn = false;
-            let currentStream = null;
-            let lastScannedCode = null;
-            let lastProductId = null;
+        const btnNhapHang = document.getElementById('btnNhapHang');
+        const btnXuatHang = document.getElementById('btnXuatHang');
+        const formNhapHang = document.getElementById('formNhapHang');
+        const formXuatHang = document.getElementById('formXuatHang');
+        const quantityNhapInput = document.getElementById('quantityNhap');
+        const quantityXuatInput = document.getElementById('quantityXuat');
+        const btnConfirmNhap = document.getElementById('btnConfirmNhap');
+        const btnConfirmXuat = document.getElementById('btnConfirmXuat');
 
-            // Hàm cập nhật biến CSS cho chiều cao của scan-box (dùng cho animation tia laser)
-            function updateLaserAnimationHeight() {
-                if (scanBox) {
-                    const scanBoxHeight = scanBox.offsetHeight;
-                    document.documentElement.style.setProperty('--qr-box-height', `${scanBoxHeight}px`);
-                }
+        const flashlightToggle = document.getElementById('flashlightToggle');
+        const uploadImageBtn = document.getElementById('uploadImageBtn');
+        const rescanBtn = document.getElementById('rescanBtn');
+        const scanBox = document.getElementById('scanBox'); // Tham chiếu đến div scan-box
+
+        let html5QrCode; // Sẽ được khởi tạo trong startScan
+        let isFlashlightOn = false;
+        let currentStream = null;
+        let lastScannedCode = null;
+        let lastProductId = null;
+
+        // Hàm cập nhật biến CSS cho chiều cao của scan-box (dùng cho animation tia laser)
+        function updateLaserAnimationHeight() {
+            if (scanBox) {
+                const scanBoxHeight = scanBox.offsetHeight;
+                document.documentElement.style.setProperty('--qr-box-height', `${scanBoxHeight}px`);
             }
+        }
 
-            // Cấu hình cho việc khởi động camera và vùng quét
-            const scannerStartConfig = {
-                fps: 10,
-                qrbox: (viewfinderWidth, viewfinderHeight) => {
-                    let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                    let qrboxEdgePercentage = 0.65;
-                    let qrboxSize = Math.floor(minEdge * qrboxEdgePercentage);
+        // Cấu hình cho việc khởi động camera và vùng quét
+        const scannerStartConfig = {
+            fps: 10,
+            qrbox: (viewfinderWidth, viewfinderHeight) => {
+                let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                let qrboxEdgePercentage = 0.65;
+                let qrboxSize = Math.floor(minEdge * qrboxEdgePercentage);
 
-                    if(scanBox) {
-                        scanBox.style.height = `${qrboxSize}px`;
-                        scanBox.style.width = `${qrboxSize}px`; // Giữ khung quét vuông
-                    }
-                    updateLaserAnimationHeight();
-
-                    return { width: qrboxSize, height: qrboxSize };
+                if (scanBox) {
+                    scanBox.style.height = `${qrboxSize}px`;
+                    scanBox.style.width = `${qrboxSize}px`; // Giữ khung quét vuông
                 }
-                // Không cần formatsToSupport ở đây, experimentalFeatures đặt khi new Html5Qrcode
-            };
+                updateLaserAnimationHeight();
 
-            const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-                console.log(`Scan result: ${decodedText}`, decodedResult);
-                lastScannedCode = decodedText;
-                actionStatusEl.textContent = 'Đã quét. Đang lấy thông tin...';
-                actionStatusEl.style.color = 'var(--scanner-text-muted)';
+                return {width: qrboxSize, height: qrboxSize};
+            }
+            // Không cần formatsToSupport ở đây, experimentalFeatures đặt khi new Html5Qrcode
+        };
 
-                if (html5QrCode && html5QrCode.getState() === Html5Qrcode.SCANNING_STATE) { // Kiểm tra trạng thái trước khi pause
-                    html5QrCode.pause(true).catch(err => console.error("Error pausing scanner:", err));
-                }
-                uploadImageBtn.style.display = 'none';
-                rescanBtn.style.display = 'flex';
+        const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+            console.log(`Scan result: ${decodedText}`, decodedResult);
+            lastScannedCode = decodedText;
+            actionStatusEl.textContent = 'Đã quét. Đang lấy thông tin...';
+            actionStatusEl.style.color = 'var(--scanner-text-muted)';
 
-                fetch("{{ url_for('get_product_info_from_scan') }}", {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ scanned_data: decodedText })
-                })
+            if (html5QrCode && html5QrCode.getState() === Html5Qrcode.SCANNING_STATE) { // Kiểm tra trạng thái trước khi pause
+                html5QrCode.pause(true).catch(err => console.error("Error pausing scanner:", err));
+            }
+            uploadImageBtn.style.display = 'none';
+            rescanBtn.style.display = 'flex';
+
+            fetch("{{ url_for('get_product_info_from_scan') }}", {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({scanned_data: decodedText})
+            })
                 .then(response => response.json())
                 .then(data => {
                     scanResultAndActionsDiv.classList.add('visible');
@@ -193,15 +443,19 @@
                         scannedCodeDisplayEl.textContent = decodedText;
                         lastProductId = null;
                         actionStatusEl.innerHTML = `<span style="color:orange;">Sản phẩm chưa có trong kho.</span>`;
-                        btnXuatHang.disabled = true; btnXuatHang.style.opacity = 0.5;
-                        btnNhapHang.disabled = false; btnNhapHang.style.opacity = 1; // Cho phép nhập nếu là sp mới
+                        btnXuatHang.disabled = true;
+                        btnXuatHang.style.opacity = 0.5;
+                        btnNhapHang.disabled = false;
+                        btnNhapHang.style.opacity = 1; // Cho phép nhập nếu là sp mới
                     } else {
                         scannedProductNameEl.textContent = data.product_name || 'Không rõ tên';
                         scannedCodeDisplayEl.textContent = decodedText;
                         lastProductId = data.product_id || null;
                         actionStatusEl.textContent = 'Chọn thao tác bên dưới.';
-                        btnXuatHang.disabled = false; btnXuatHang.style.opacity = 1;
-                        btnNhapHang.disabled = false; btnNhapHang.style.opacity = 1;
+                        btnXuatHang.disabled = false;
+                        btnXuatHang.style.opacity = 1;
+                        btnNhapHang.disabled = false;
+                        btnNhapHang.style.opacity = 1;
                     }
                 })
                 .catch(error => {
@@ -210,37 +464,39 @@
                     scannedProductNameEl.textContent = 'Lỗi';
                     scannedCodeDisplayEl.textContent = decodedText;
                     actionStatusEl.innerHTML = `<span style="color:red;">Lỗi kết nối server khi lấy thông tin.</span>`;
-                    btnXuatHang.disabled = true; btnXuatHang.style.opacity = 0.5;
-                    btnNhapHang.disabled = true; btnNhapHang.style.opacity = 0.5;
+                    btnXuatHang.disabled = true;
+                    btnXuatHang.style.opacity = 0.5;
+                    btnNhapHang.disabled = true;
+                    btnNhapHang.style.opacity = 0.5;
                 });
-            };
+        };
 
-            const qrCodeErrorCallback = (errorMessage) => {
-                // Có thể log lỗi này nếu cần debug, nhưng thường xuyên xảy ra khi camera chưa focus
-                // console.warn(`QR Scan Error: ${errorMessage}`);
-            };
+        const qrCodeErrorCallback = (errorMessage) => {
+            // Có thể log lỗi này nếu cần debug, nhưng thường xuyên xảy ra khi camera chưa focus
+            // console.warn(`QR Scan Error: ${errorMessage}`);
+        };
 
-            function startScan() {
-                actionStatusEl.textContent = "Đang khởi động camera...";
-                actionStatusEl.style.color = "var(--scanner-text-muted)";
-                scanResultAndActionsDiv.classList.remove('visible');
-                scanResultAndActionsDiv.classList.add('hidden'); // Sử dụng hidden thay vì chỉ opacity
+        function startScan() {
+            actionStatusEl.textContent = "Đang khởi động camera...";
+            actionStatusEl.style.color = "var(--scanner-text-muted)";
+            scanResultAndActionsDiv.classList.remove('visible');
+            scanResultAndActionsDiv.classList.add('hidden'); // Sử dụng hidden thay vì chỉ opacity
 
-                if (!html5QrCode) {
-                    html5QrCode = new Html5Qrcode(
-                        "qr-reader",
-                        {
-                            experimentalFeatures: { useBarCodeDetectorIfSupported: true }
-                        }
-                    );
-                }
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode(
+                    "qr-reader",
+                    {
+                        experimentalFeatures: {useBarCodeDetectorIfSupported: true}
+                    }
+                );
+            }
 
-                html5QrCode.start(
-                    { facingMode: "environment" },
-                    scannerStartConfig,
-                    qrCodeSuccessCallback,
-                    qrCodeErrorCallback
-                )
+            html5QrCode.start(
+                {facingMode: "environment"},
+                scannerStartConfig,
+                qrCodeSuccessCallback,
+                qrCodeErrorCallback
+            )
                 .then(() => {
                     console.log("Scanner started successfully (rear camera).");
                     actionStatusEl.textContent = "";
@@ -254,78 +510,172 @@
                 .catch(err => {
                     console.warn("Rear camera failed, trying front camera: ", err);
                     html5QrCode.start(
-                        { facingMode: "user" },
+                        {facingMode: "user"},
                         scannerStartConfig,
                         qrCodeSuccessCallback,
                         qrCodeErrorCallback
                     )
-                    .then(() => {
-                        console.log("Scanner started successfully (front camera).");
-                        actionStatusEl.textContent = "";
-                        const videoElement = document.querySelector('#qr-reader video');
-                        if (videoElement && videoElement.srcObject) {
-                            currentStream = videoElement.srcObject;
-                        }
-                        updateLaserAnimationHeight();
-                        window.addEventListener('resize', updateLaserAnimationHeight);
-                    })
-                    .catch(err2 => {
-                        console.error("Failed to start scanner with any camera: ", err2);
-                        actionStatusEl.innerHTML = `<span style="color:red;">Không thể khởi động camera. Lỗi: ${String(err2).substring(0,100)}. Vui lòng cấp quyền và thử lại.</span>`;
-                    });
+                        .then(() => {
+                            console.log("Scanner started successfully (front camera).");
+                            actionStatusEl.textContent = "";
+                            const videoElement = document.querySelector('#qr-reader video');
+                            if (videoElement && videoElement.srcObject) {
+                                currentStream = videoElement.srcObject;
+                            }
+                            updateLaserAnimationHeight();
+                            window.addEventListener('resize', updateLaserAnimationHeight);
+                        })
+                        .catch(err2 => {
+                            console.error("Failed to start scanner with any camera: ", err2);
+                            actionStatusEl.innerHTML = `<span style="color:red;">Không thể khởi động camera. Lỗi: ${String(err2).substring(0, 100)}. Vui lòng cấp quyền và thử lại.</span>`;
+                        });
                 });
+        }
+
+        startScan();
+
+        btnNhapHang.addEventListener('click', () => { /* ... giữ nguyên ... */
+            formNhapHang.classList.remove('hidden');
+            formXuatHang.classList.add('hidden');
+            quantityNhapInput.focus();
+        });
+        btnXuatHang.addEventListener('click', () => { /* ... giữ nguyên ... */
+            formXuatHang.classList.remove('hidden');
+            formNhapHang.classList.add('hidden');
+            quantityXuatInput.focus();
+        });
+
+        function handleInventoryAction(actionType, quantity) {
+            if (!lastScannedCode) {
+                actionStatusEl.innerHTML = `<span style="color:red;">Lỗi: Không có mã nào.</span>`;
+                return;
             }
-
-            startScan();
-
-            btnNhapHang.addEventListener('click', () => { /* ... giữ nguyên ... */ formNhapHang.classList.remove('hidden'); formXuatHang.classList.add('hidden'); quantityNhapInput.focus(); });
-            btnXuatHang.addEventListener('click', () => { /* ... giữ nguyên ... */ formXuatHang.classList.remove('hidden'); formNhapHang.classList.add('hidden'); quantityXuatInput.focus(); });
-
-            function handleInventoryAction(actionType, quantity) {
-                if (!lastScannedCode) { actionStatusEl.innerHTML = `<span style="color:red;">Lỗi: Không có mã nào.</span>`; return; }
-                actionStatusEl.textContent = `Đang ${actionType === 'nhap' ? 'nhập' : 'xuất'} kho...`;
-                actionStatusEl.style.color = 'var(--scanner-text-muted)';
-                fetch("{{ url_for('update_inventory_and_log') }}", { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ scanned_data: lastScannedCode, product_id: lastProductId, product_name: (scannedProductNameEl.textContent === 'Không có trong hệ thống' || scannedProductNameEl.textContent === 'Lỗi' || scannedProductNameEl.textContent === 'Không rõ tên' ? null : scannedProductNameEl.textContent), action: actionType, quantity: quantity }) })
+            actionStatusEl.textContent = `Đang ${actionType === 'nhap' ? 'nhập' : 'xuất'} kho...`;
+            actionStatusEl.style.color = 'var(--scanner-text-muted)';
+            fetch("{{ url_for('update_inventory_and_log') }}", {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    scanned_data: lastScannedCode,
+                    product_id: lastProductId,
+                    product_name: (scannedProductNameEl.textContent === 'Không có trong hệ thống' || scannedProductNameEl.textContent === 'Lỗi' || scannedProductNameEl.textContent === 'Không rõ tên' ? null : scannedProductNameEl.textContent),
+                    action: actionType,
+                    quantity: quantity
+                })
+            })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.error) { actionStatusEl.innerHTML = `<span style="color:red;">Lỗi: ${data.error}</span>`; }
-                    else { actionStatusEl.innerHTML = `<span style="color:lightgreen;">${data.message}</span>`; setTimeout(resetScanUI, 1500); }
+                    if (data.error) {
+                        actionStatusEl.innerHTML = `<span style="color:red;">Lỗi: ${data.error}</span>`;
+                    } else {
+                        actionStatusEl.innerHTML = `<span style="color:lightgreen;">${data.message}</span>`;
+                        setTimeout(resetScanUI, 1500);
+                    }
                 })
-                .catch(error => { console.error(error); actionStatusEl.innerHTML = `<span style="color:red;">Lỗi kết nối server.</span>`; });
+                .catch(error => {
+                    console.error(error);
+                    actionStatusEl.innerHTML = `<span style="color:red;">Lỗi kết nối server.</span>`;
+                });
+        }
+
+        btnConfirmNhap.addEventListener('click', () => {
+            const quantity = parseInt(quantityNhapInput.value);
+            if (quantity > 0) {
+                handleInventoryAction('nhap', quantity);
+            } else {
+                actionStatusEl.innerHTML = `<span style="color:red;">Số lượng nhập phải > 0.</span>`;
             }
-            btnConfirmNhap.addEventListener('click', () => { const quantity = parseInt(quantityNhapInput.value); if (quantity > 0) { handleInventoryAction('nhap', quantity); } else { actionStatusEl.innerHTML = `<span style="color:red;">Số lượng nhập phải > 0.</span>`; } });
-            btnConfirmXuat.addEventListener('click', () => { const quantity = parseInt(quantityXuatInput.value); if (quantity > 0) { handleInventoryAction('xuat', quantity); } else { actionStatusEl.innerHTML = `<span style="color:red;">Số lượng xuất phải > 0.</span>`; } });
-
-            function resetScanUI() {
-                scanResultAndActionsDiv.classList.remove('visible');
-                scanResultAndActionsDiv.classList.add('hidden');
-                formNhapHang.classList.add('hidden'); formXuatHang.classList.add('hidden');
-                quantityNhapInput.value = '1'; quantityXuatInput.value = '1';
-                actionStatusEl.textContent = ''; lastScannedCode = null; lastProductId = null;
-                uploadImageBtn.style.display = 'flex'; rescanBtn.style.display = 'none';
-                if (html5QrCode && html5QrCode.getState() === Html5Qrcode.PAUSED_STATE) { // Chỉ resume nếu đang pause
-                    try { html5QrCode.resume(); console.log("Camera resumed."); }
-                    catch(e) { console.error("Error resuming camera:", e); startScan(); /* Thử khởi động lại nếu resume lỗi */ }
-                } else if (html5QrCode && html5QrCode.getState() !== Html5Qrcode.SCANNING_STATE) {
-                    startScan(); // Nếu chưa scanning, khởi động lại
-                }
-            }
-            rescanBtn.addEventListener('click', resetScanUI);
-
-            flashlightToggle.addEventListener('click', () => { if (currentStream) { const track = currentStream.getVideoTracks()[0]; if (track.getCapabilities && track.getCapabilities().torch) { isFlashlightOn = !isFlashlightOn; track.applyConstraints({ advanced: [{torch: isFlashlightOn}] }).then(() => { flashlightToggle.style.color = isFlashlightOn ? 'var(--scanner-highlight)' : 'var(--scanner-text-light)'; }).catch(e => {console.error(e); alert('Không thể bật đèn pin.');}); } else { alert('Thiết bị không hỗ trợ đèn pin.'); } } else { alert('Camera chưa sẵn sàng.'); } });
-
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file'; fileInput.accept = 'image/*'; fileInput.style.display = 'none';
-            document.body.appendChild(fileInput);
-            uploadImageBtn.addEventListener('click', () => { fileInput.click(); });
-            fileInput.addEventListener('change', event => { const file = event.target.files[0]; if (file && html5QrCode) { actionStatusEl.textContent = 'Đang quét ảnh...'; actionStatusEl.classList.remove('hidden'); scanResultAndActionsDiv.classList.add('visible'); if (html5QrCode.getState() === Html5Qrcode.SCANNING_STATE) { html5QrCode.pause(true).catch(err => console.error("Error pausing for file scan:", err)); } html5QrCode.scanFile(file, true).then(decodedText => { qrCodeSuccessCallback(decodedText, { decodedText: decodedText }); }).catch(err => { actionStatusEl.textContent = `Lỗi quét ảnh: ${err}`; console.error(err); resetScanUI(); /* Reset nếu quét file lỗi */ }).finally(() => { fileInput.value = ''; }); } });
-
-            window.addEventListener('pagehide', () => { // 'pagehide' tốt hơn 'beforeunload' cho mobile
-                if (html5QrCode && html5QrCode.isScanning) {
-                    html5QrCode.stop().then(() => console.log("Scanner stopped on page hide.")).catch(err => console.error("Error stopping scanner on page hide:", err));
-                }
-            });
         });
-    </script>
+        btnConfirmXuat.addEventListener('click', () => {
+            const quantity = parseInt(quantityXuatInput.value);
+            if (quantity > 0) {
+                handleInventoryAction('xuat', quantity);
+            } else {
+                actionStatusEl.innerHTML = `<span style="color:red;">Số lượng xuất phải > 0.</span>`;
+            }
+        });
+
+        function resetScanUI() {
+            scanResultAndActionsDiv.classList.remove('visible');
+            scanResultAndActionsDiv.classList.add('hidden');
+            formNhapHang.classList.add('hidden');
+            formXuatHang.classList.add('hidden');
+            quantityNhapInput.value = '1';
+            quantityXuatInput.value = '1';
+            actionStatusEl.textContent = '';
+            lastScannedCode = null;
+            lastProductId = null;
+            uploadImageBtn.style.display = 'flex';
+            rescanBtn.style.display = 'none';
+            if (html5QrCode && html5QrCode.getState() === Html5Qrcode.PAUSED_STATE) { // Chỉ resume nếu đang pause
+                try {
+                    html5QrCode.resume();
+                    console.log("Camera resumed.");
+                } catch (e) {
+                    console.error("Error resuming camera:", e);
+                    startScan(); /* Thử khởi động lại nếu resume lỗi */
+                }
+            } else if (html5QrCode && html5QrCode.getState() !== Html5Qrcode.SCANNING_STATE) {
+                startScan(); // Nếu chưa scanning, khởi động lại
+            }
+        }
+
+        rescanBtn.addEventListener('click', resetScanUI);
+
+        flashlightToggle.addEventListener('click', () => {
+            if (currentStream) {
+                const track = currentStream.getVideoTracks()[0];
+                if (track.getCapabilities && track.getCapabilities().torch) {
+                    isFlashlightOn = !isFlashlightOn;
+                    track.applyConstraints({advanced: [{torch: isFlashlightOn}]}).then(() => {
+                        flashlightToggle.style.color = isFlashlightOn ? 'var(--scanner-highlight)' : 'var(--scanner-text-light)';
+                    }).catch(e => {
+                        console.error(e);
+                        alert('Không thể bật đèn pin.');
+                    });
+                } else {
+                    alert('Thiết bị không hỗ trợ đèn pin.');
+                }
+            } else {
+                alert('Camera chưa sẵn sàng.');
+            }
+        });
+
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.style.display = 'none';
+        document.body.appendChild(fileInput);
+        uploadImageBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+        fileInput.addEventListener('change', event => {
+            const file = event.target.files[0];
+            if (file && html5QrCode) {
+                actionStatusEl.textContent = 'Đang quét ảnh...';
+                actionStatusEl.classList.remove('hidden');
+                scanResultAndActionsDiv.classList.add('visible');
+                if (html5QrCode.getState() === Html5Qrcode.SCANNING_STATE) {
+                    html5QrCode.pause(true).catch(err => console.error("Error pausing for file scan:", err));
+                }
+                html5QrCode.scanFile(file, true).then(decodedText => {
+                    qrCodeSuccessCallback(decodedText, {decodedText: decodedText});
+                }).catch(err => {
+                    actionStatusEl.textContent = `Lỗi quét ảnh: ${err}`;
+                    console.error(err);
+                    resetScanUI(); /* Reset nếu quét file lỗi */
+                }).finally(() => {
+                    fileInput.value = '';
+                });
+            }
+        });
+
+        window.addEventListener('pagehide', () => { // 'pagehide' tốt hơn 'beforeunload' cho mobile
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => console.log("Scanner stopped on page hide.")).catch(err => console.error("Error stopping scanner on page hide:", err));
+            }
+        });
+    });
+</script>
 </body>
 </html>
