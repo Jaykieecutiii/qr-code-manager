@@ -8,15 +8,15 @@
   "theme_color": "#2F4F4F",
   "orientation": "portrait-primary",
   "icons": [
-  {
-    "src": "/static/icons/icon-192x192.png",
-    "type": "image/png",
-    "sizes": "192x192"
-  },
-  {
-    "src": "/static/icons/icon-512x512.png",
-    "type": "image/png",
-    "sizes": "512x512"
-  }
-]
+    {
+      "src": "/static/icon/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/static/icon/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
 }
