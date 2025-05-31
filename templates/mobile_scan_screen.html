@@ -1,10 +1,392 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>Quét Mã Sản Phẩm</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#222222"> <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <style>
+        :root {
+            --scanner-bg: #222222;
+            --scanner-text-light: #f5f5f5;
+            --scanner-text-muted: #a0a0a0;
+            --scanner-highlight: #00ffc3; /* Màu xanh lá cây neon cho khung quét */
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Ngăn cuộn trên màn hình quét */
+            background-color: var(--scanner-bg);
+            color: var(--scanner-text-light);
+            font-family: 'Roboto', sans-serif;
+        }
+        .scan-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+        }
+        .scan-header {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: rgba(0,0,0,0.3);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+        }
+        .scan-header .back-button {
+            color: var(--scanner-text-light);
+            font-size: 20px;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        .scan-header .title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .scan-header .flashlight-button {
+            margin-left: auto;
+            color: var(--scanner-text-light);
+            font-size: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .camera-viewport-container {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Đảm bảo video không tràn */
+            margin-top: 60px; /* Khoảng cách cho header */
+            margin-bottom: 140px; /* Khoảng cách cho footer (nếu có) và phần thông tin */
+        }
+        #qr-reader {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Đảm bảo video lấp đầy mà không bị méo */
+            position: absolute;
+            top: 0; left: 0;
+        }
+        .scan-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .scan-region-text {
+            background-color: rgba(0,0,0,0.6);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: var(--scanner-text-muted);
+        }
+        .scan-box {
+            width: 70vw; /* Hoặc kích thước cố định: 250px */
+            height: 50vw; /* Hoặc kích thước cố định: 180px */
+            max-width: 300px;
+            max-height: 220px;
+            border: 3px solid var(--scanner-highlight);
+            box-shadow: 0 0 0 2000px rgba(0,0,0,0.5); /* Tạo hiệu ứng tối xung quanh */
+            position: relative;
+        }
+        /* (Tùy chọn) Thêm hiệu ứng tia laser quét */
+        .scan-box .laser {
+            width: 100%;
+            background-color: var(--scanner-highlight);
+            height: 2px;
+            position: absolute;
+            top: 50%;
+            left: 0;
+            opacity: 0.7;
+            box-shadow: 0 0 4px var(--scanner-highlight);
+            animation: scan-laser 2s infinite;
+        }
+        @keyframes scan-laser {
+            0% { transform: translateY(-80px); }
+            50% { transform: translateY(80px); }
+            100% { transform: translateY(-80px); }
+        }
+
+        .scan-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 15px;
+            background-color: rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .scan-footer-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--scanner-text-light);
+            text-decoration: none;
+            font-size: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .scan-footer-button i {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        #scanned-result-info {
+            position: fixed;
+            bottom: 80px; /* Phía trên scan-footer */
+            left: 15px;
+            right: 15px;
+            background-color: rgba(255,255,255,0.9);
+            color: var(--text-dark);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: center;
+            z-index: 5;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
-$END$
+    <div class="scan-container">
+        <header class="scan-header">
+            <a href="javascript:history.back()" class="back-button"><i class="fas fa-arrow-left"></i></a>
+            <span class="title">Quét mã QR/Mã vạch</span>
+            <button class="flashlight-button" id="flashlightToggle"><i class="fas fa-lightbulb"></i></button>
+        </header>
+
+        <div class="camera-viewport-container">
+            <div id="qr-reader"></div> <div class="scan-overlay">
+                <div class="scan-region-text">Di chuyển camera vào mã</div>
+                <div class="scan-box">
+                    <div class="laser"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="scanned-result-info" class="hidden">
+            </div>
+
+        <footer class="scan-footer">
+            <button class="scan-footer-button" id="uploadImageBtn">
+                <i class="fas fa-image"></i>
+                <span>Tải ảnh lên</span>
+            </button>
+            </footer>
+    </div>
+
+    <script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const qrReaderElement = document.getElementById('qr-reader');
+            const scannedResultInfo = document.getElementById('scanned-result-info');
+            const flashlightToggle = document.getElementById('flashlightToggle');
+            let html5QrCode;
+            let isFlashlightOn = false;
+            let currentStream = null; // Để lưu track camera
+
+            const config = {
+                fps: 10,
+                qrbox: function(viewfinderWidth, viewfinderHeight) {
+                    // Kích thước của khung quét, đảm bảo nó nằm trong viewfinder
+                    let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                    let qrboxSize = Math.floor(minEdge * 0.7); // Khung quét chiếm 70% cạnh nhỏ nhất
+                    return { width: qrboxSize, height: qrboxSize * 0.7 }; // Điều chỉnh tỉ lệ nếu cần
+                },
+                formatsToSupport: [ // Hỗ trợ cả QR và các loại Barcode phổ biến
+                    Html5QrcodeSupportedFormats.QR_CODE,
+                    Html5QrcodeSupportedFormats.EAN_13,
+                    Html5QrcodeSupportedFormats.CODE_128,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.UPC_E,
+                    Html5QrcodeSupportedFormats.ITF // (Tùy chọn)
+                ],
+                experimentalFeatures: {
+                    useBarCodeDetectorIfSupported: true
+                }
+            };
+
+            const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+                console.log(`Scan result: ${decodedText}`, decodedResult);
+                scannedResultInfo.innerHTML = `Đã quét: <strong>${decodedText}</strong>. Đang xử lý...`;
+                scannedResultInfo.classList.remove('hidden');
+
+                // Tạm dừng camera sau khi quét thành công
+                if (html5QrCode && html5QrCode.isScanning) {
+                    html5QrCode.pause(true); // true để giữ camera stream cho việc bật đèn pin
+                }
+
+                // Gửi dữ liệu quét được lên server
+                fetch("{{ url_for('process_and_log_scan') }}", { // Route mới cần tạo
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ scanned_data: decodedText })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        scannedResultInfo.innerHTML = `<span style="color:red;">Lỗi: ${data.error}</span><br>Mã: ${decodedText}`;
+                    } else {
+                        let infoHtml = `<strong>${data.product_name || 'Không rõ sản phẩm'}</strong><br>Mã quét: ${data.scanned_data}`;
+                        if (data.log_message) {
+                            infoHtml += `<br><span style="color:green;">${data.log_message}</span>`;
+                        }
+                        scannedResultInfo.innerHTML = infoHtml;
+                    }
+                    // Sau 2-3 giây, có thể cho phép quét lại hoặc có nút "Quét tiếp"
+                    setTimeout(() => {
+                         if (html5QrCode && html5QrCode.isScanning === false) { // Chỉ resume nếu đang pause
+                            try { html5QrCode.resume(); } catch(e) { console.error("Error resuming:", e)}
+                         }
+                        scannedResultInfo.classList.add('hidden');
+                    }, 5000); // Hiển thị kết quả trong 5 giây
+                })
+                .catch(error => {
+                    console.error('Lỗi khi gửi dữ liệu quét:', error);
+                    scannedResultInfo.innerHTML = `<span style="color:red;">Lỗi kết nối server.</span><br>Mã: ${decodedText}`;
+                     setTimeout(() => {
+                         if (html5QrCode && html5QrCode.isScanning === false) {
+                            try { html5QrCode.resume(); } catch(e) { console.error("Error resuming:", e)}
+                         }
+                        scannedResultInfo.classList.add('hidden');
+                    }, 5000);
+                });
+            };
+
+            const qrCodeErrorCallback = (errorMessage) => {
+                // Thường xuyên bị gọi khi camera chưa tìm thấy mã, có thể bỏ qua log này
+                // console.warn(`QR Code no longer in front of camera, error: ${errorMessage}`);
+            };
+
+            function startScan() {
+                if (!html5QrCode) {
+                     html5QrCode = new Html5Qrcode("qr-reader", {
+                        verbose: false, // true để debug nhiều hơn
+                        experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+                    });
+                }
+
+                // Thử dùng camera sau trước
+                html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback, qrCodeErrorCallback)
+                .then(() => {
+                    console.log("Scanner started with rear camera.");
+                    // Lấy stream để có thể bật đèn pin
+                    const videoElement = document.getElementById('qr-reader-video');
+                    if (videoElement && videoElement.srcObject) {
+                        currentStream = videoElement.srcObject;
+                    }
+                })
+                .catch(err => {
+                    console.warn("Rear camera not found or error: ", err, " Trying front camera.");
+                    // Nếu lỗi, thử camera trước
+                    html5QrCode.start({ facingMode: "user" }, config, qrCodeSuccessCallback, qrCodeErrorCallback)
+                    .then(() => {
+                        console.log("Scanner started with front camera.");
+                        const videoElement = document.getElementById('qr-reader-video');
+                        if (videoElement && videoElement.srcObject) {
+                            currentStream = videoElement.srcObject;
+                        }
+                    })
+                    .catch(err2 => {
+                        console.error("Failed to start scanner with any camera: ", err2);
+                        scannedResultInfo.innerHTML = `<span style="color:red;">Không thể khởi động camera.</span>`;
+                        scannedResultInfo.classList.remove('hidden');
+                    });
+                });
+            }
+
+            // Bắt đầu quét khi trang tải xong
+            startScan();
+
+            // Xử lý đèn pin
+            flashlightToggle.addEventListener('click', () => {
+                if (currentStream) {
+                    const track = currentStream.getVideoTracks()[0];
+                    if (track.getCapabilities().torch) { // Kiểm tra xem camera có hỗ trợ đèn pin không
+                        isFlashlightOn = !isFlashlightOn;
+                        track.applyConstraints({
+                            advanced: [{torch: isFlashlightOn}]
+                        }).then(() => {
+                            console.log(isFlashlightOn ? "Flashlight ON" : "Flashlight OFF");
+                            flashlightToggle.style.color = isFlashlightOn ? 'var(--scanner-highlight)' : 'var(--scanner-text-light)';
+                        }).catch(e => console.error('Error applying torch constraint: ', e));
+                    } else {
+                        alert('Thiết bị này không hỗ trợ đèn pin qua trình duyệt.');
+                    }
+                } else {
+                    alert('Camera chưa sẵn sàng để bật đèn pin.');
+                }
+            });
+
+            // Xử lý nút tải ảnh lên (cần thêm logic xử lý file)
+            const uploadImageBtn = document.getElementById('uploadImageBtn');
+            if (uploadImageBtn) {
+                 const fileInput = document.createElement('input');
+                 fileInput.type = 'file';
+                 fileInput.accept = 'image/*';
+                 fileInput.style.display = 'none';
+                 document.body.appendChild(fileInput);
+
+                uploadImageBtn.addEventListener('click', () => {
+                    fileInput.click();
+                });
+
+                fileInput.addEventListener('change', event => {
+                    const file = event.target.files[0];
+                    if (file && html5QrCode) {
+                        scannedResultInfo.innerHTML = `Đang quét ảnh...`;
+                        scannedResultInfo.classList.remove('hidden');
+                        if (html5QrCode.isScanning) { // Tạm dừng camera nếu đang quét
+                            html5QrCode.pause(true);
+                        }
+                        html5QrCode.scanFile(file, true) // true for showImageToCoop
+                        .then(decodedText => {
+                            qrCodeSuccessCallback(decodedText, { decodedText: decodedText }); // Gọi callback thành công
+                        })
+                        .catch(err => {
+                            scannedResultInfo.innerHTML = `<span style="color:red;">Không tìm thấy mã trong ảnh: ${err}</span>`;
+                            console.error(`Error scanning file. Reason: ${err}`)
+                        })
+                        .finally(() => {
+                            // Có thể resume camera sau khi quét ảnh xong
+                            // setTimeout(() => {
+                            //     if (html5QrCode && html5QrCode.isScanning === false) {
+                            //         try { html5QrCode.resume(); } catch(e) { console.error("Error resuming:", e)}
+                            //     }
+                            //    scannedResultInfo.classList.add('hidden');
+                            // }, 3000);
+                        });
+                    }
+                });
+            }
+
+            // Dừng camera khi người dùng rời khỏi trang (quan trọng)
+            window.addEventListener('beforeunload', () => {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    html5QrCode.stop().catch(err => console.error("Error stopping scanner on page leave:", err));
+                }
+            });
+        });
+    </script>
 </body>
 </html>

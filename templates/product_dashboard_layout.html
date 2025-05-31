@@ -13,10 +13,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <style>
-    :root {
-        --category-background-image: {% if category_bg_image %};url('{{ category_bg_image | e }}'){% else %}none{% endif %};}
 
+    <style>
+        :root {
+            --category-background-image: {% if category_bg_image %}url('{{ category_bg_image | e }}'){% else %}none{% endif %};
+        }
     </style>
     <title>{% block page_specific_title %}Quản lý sản phẩm{% endblock %}</title>
 </head>
@@ -24,14 +25,15 @@
     <div class="dashboard-container">
         <header class="dashboard-header">
             <button class="sidebar-toggle desktop-only-element" id="sidebarToggleDesktop" aria-label="Mở/Đóng menu desktop">
-                <i class="fas fa-bars"></i> </button>
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="header-title">
                 <i class="fas fa-qrcode logo-icon"></i>
                 <h1>
                     Quản lý sản phẩm
                     {% if category_display_name %}
                         - {{ category_display_name }}
-                    {% elif page_specific_title and page_specific_title != "Bảng điều khiển chính" and page_specific_title != "Tổng quan Hệ Thống" %}
+                    {% elif page_specific_title and page_specific_title not in ["Bảng điều khiển chính", "Danh mục lựa chọn", "Tổng quan Hệ Thống"] %}
                         - {% block header_page_title %}{{ self.page_specific_title() }}{% endblock %}
                     {% endif %}
                 </h1>
@@ -39,7 +41,7 @@
             <div class="header-user">
                 {% if session.username %}
                     <i class="fas fa-user-circle"></i>
-                    <span>Chào, <strong>{{ session.username }}</strong></span>
+                    <span class="desktop-only-element">Chào, <strong>{{ session.username }}</strong></span>
                     <a href="{{ url_for('logout') }}" title="Đăng xuất"><i class="fas fa-sign-out-alt"></i></a>
                 {% else %}
                     <a href="{{ url_for('login_page') }}" title="Đăng nhập">Đăng nhập</a>
@@ -49,14 +51,18 @@
 
         <aside class="dashboard-sidebar desktop-only-element" id="dashboardSidebar">
             <nav>
-                <ul>
+                 <ul>
                     <li class="sidebar-item {{ 'active' if request.endpoint == 'product_dashboard_overview' else '' }}">
                         <a href="{{ url_for('product_dashboard_overview') }}"><i class="fas fa-th-large"></i><span>Danh mục lựa chọn</span></a>
+                    </li>
+                     <li class="sidebar-item {{ 'active' if request.endpoint == 'product_dashboard_overview_detail' else '' }}">
+                        <a href="{{ url_for('product_dashboard_overview_detail') }}"><i class="fas fa-chart-line"></i><span>Thống kê</span></a>
                     </li>
                     <li class="sidebar-item has-submenu {{ 'active' if request.endpoint in ['pd_nhap_kho_quet_page', 'pd_nhap_san_pham_moi', 'pd_xuat_kho_quet_page'] else '' }}">
                         <a href="#"><i class="fas fa-exchange-alt"></i><span>Nhập/Xuất Kho</span> <i class="fas fa-angle-down arrow"></i></a>
                         <ul class="submenu">
                             <li><a href="{{ url_for('pd_nhap_kho_quet_page') }}">Nhập kho bằng quét mã</a></li>
+                            <li><a href="{{ url_for('pd_nhap_san_pham_moi') }}">Nhập sản phẩm mới</a></li>
                             <li><a href="{{ url_for('pd_xuat_kho_quet_page') }}">Xuất kho bằng mã</a></li>
                         </ul>
                     </li>
@@ -64,7 +70,7 @@
                         <a href="{{ url_for('pd_ton_kho_quan_ly') }}"><i class="fas fa-boxes-stacked"></i><span>Tồn kho</span></a>
                     </li>
                     <li class="sidebar-item {{ 'active' if request.endpoint == 'pd_bao_cao_xem' else '' }}">
-                        <a href="{{ url_for('pd_bao_cao_xem') }}"><i class="fas fa-chart-line"></i><span>Doanh thu</span></a>
+                        <a href="{{ url_for('pd_bao_cao_xem') }}"><i class="fas fa-file-contract"></i><span>Báo cáo (Doanh thu)</span></a>
                     </li>
                     <li class="sidebar-item sidebar-item-bottom {{ 'active' if request.endpoint == 'pd_user_profile' else '' }}">
                         <a href="{{ url_for('pd_user_profile') }}"><i class="fas fa-user-cog"></i><span>Tài khoản</span></a>
@@ -76,36 +82,62 @@
         <main class="dashboard-main" id="dashboardMainContent">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
+                    <div class="flash-messages-container">
                     {% for category, message in messages %}
                         <div class="alert alert-{{ category }}">{{ message }}</div>
                     {% endfor %}
+                    </div>
                 {% endif %}
             {% endwith %}
 
             {% block product_dashboard_content %}
-                {% endblock %}
+            {% endblock %}
         </main>
 
+        {% if mobile_nav_type == 'main_dashboard_nav' %}
         <nav class="mobile-bottom-nav mobile-only-element">
-            <a href="{{ url_for('product_dashboard_overview') }}" class="nav-item {{ 'active' if request.endpoint == 'product_dashboard_overview' or request.endpoint == 'manage_category_placeholder' else '' }}">
-                <i class="fas fa-th-list"></i> <span class="nav-text">Danh mục</span>
+            <a href="{{ url_for('product_dashboard_overview') }}" class="nav-item {{ 'active' if request.endpoint == 'product_dashboard_overview' else '' }}">
+                <i class="fas fa-th-list"></i>
+                <span class="nav-text">Danh mục</span>
             </a>
             <a href="{{ url_for('pd_bao_cao_xem') }}" class="nav-item {{ 'active' if request.endpoint == 'pd_bao_cao_xem' else '' }}">
-                <i class="fas fa-chart-pie"></i> <span class="nav-text">Báo cáo</span>
+                <i class="fas fa-chart-pie"></i>
+                <span class="nav-text">Báo cáo</span>
             </a>
             <a href="{{ url_for('pd_user_profile') }}" class="nav-item {{ 'active' if request.endpoint == 'pd_user_profile' else '' }}">
-                <i class="fas fa-user"></i> <span class="nav-text">Tôi</span>
+                <i class="fas fa-user"></i>
+                <span class="nav-text">Tôi</span>
             </a>
         </nav>
-    </div>
+        {% elif mobile_nav_type == 'category_detail_nav' %}
+        <nav class="mobile-bottom-nav mobile-only-element">
+            <a href="{{ url_for('product_dashboard_overview') }}" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span class="nav-text">Trang chủ</span>
+            </a>
+            <a href="{{ url_for('render_mobile_scan_page', category_slug=category_slug if category_slug else None ) }}" class="nav-item nav-item-main {{ 'active' if request.endpoint == 'render_mobile_scan_page' else '' }}">
+                <div class="icon-wrapper">
+                    <i class="fas fa-qrcode"></i>
+                    <span class="nav-text">Quét Mã</span>
+                </div>
+            </a>
+            <a href="{{ url_for('product_dashboard_overview_detail') }}" class="nav-item">
+                <i class="fas fa-bars"></i>
+                <span class="nav-text">Tổng hợp</span>
+            </a>
+        </nav>
+        {% endif %}
+        </div>
 
     <script>
+    // JavaScript cho submenu desktop
     document.addEventListener('DOMContentLoaded', function() {
         const sidebarItemsWithSubmenu = document.querySelectorAll('.dashboard-sidebar .sidebar-item.has-submenu > a');
         sidebarItemsWithSubmenu.forEach(item => {
             item.addEventListener('click', function(event) {
                 event.preventDefault();
                 const parentLi = this.parentElement;
+                // Đóng các submenu khác đang mở
                 document.querySelectorAll('.dashboard-sidebar .sidebar-item.has-submenu.open').forEach(openItem => {
                     if (openItem !== parentLi) {
                         openItem.classList.remove('open');
@@ -115,22 +147,23 @@
             });
         });
 
-        // (Tùy chọn) JS cho nút thu gọn sidebar desktop (nếu bạn làm)
-        // const sidebarToggleDesktop = document.getElementById('sidebarToggleDesktop');
-        // const dashboardContainer = document.querySelector('.dashboard-container');
-        // if (sidebarToggleDesktop) {
-        //     sidebarToggleDesktop.addEventListener('click', function() {
-        //         dashboardContainer.classList.toggle('sidebar-collapsed');
-        //     });
-        // }
+        // (Tùy chọn) Nếu bạn muốn dùng nút hamburger cho sidebar desktop khi thu nhỏ màn hình desktop (không phải mobile)
+        const sidebarToggleDesktop = document.getElementById('sidebarToggleDesktop');
+        const dashboardContainer = document.querySelector('.dashboard-container');
+        if (sidebarToggleDesktop && dashboardContainer) {
+            sidebarToggleDesktop.addEventListener('click', function() {
+                dashboardContainer.classList.toggle('sidebar-collapsed');
+            });
+        }
     });
     </script>
     <script>
+        // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}")
-                    .then(registration => { /* console.log('SW registered'); */ })
-                    .catch(err => { /* console.log('SW registration failed: ', err); */ });
+                    .then(registration => { console.log('SW registered: ', registration.scope); })
+                    .catch(err => { console.log('SW registration failed: ', err); });
             });
         }
     </script>

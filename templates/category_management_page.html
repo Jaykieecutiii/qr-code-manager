@@ -1,38 +1,24 @@
 {% extends "product_dashboard_layout.html" %}
 
 {% block page_specific_title %}
-    Quản lý: {{ category_display_name }}
+    {{ category_display_name }}
 {% endblock %}
 
-{# Ghi đè block tiêu đề header nếu layout của bạn hỗ trợ #}
 {% block header_page_title %}
     {{ category_display_name }}
 {% endblock %}
 
-
 {% block product_dashboard_content %}
-<div class="container-fluid category-content-wrapper"> <h2 class="mb-4 category-page-main-title" style="color: white; text-shadow: 1px 1px 3px black;">
-        Danh sách Sản phẩm: {{ category_display_name }}
-    </h2>
+<div class="container-fluid category-content-wrapper">
+    <div class="category-description-box">
+        <p>{{ category_description }}</p>
+        </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="float:right; background:none; border:none; font-size:1.2rem;">&times;</button>
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <div class="card" style="background-color: rgba(255,255,255,0.9);"> <div class="card-body">
-            <p>Chức năng quản lý chi tiết cho danh mục <strong>{{ category_display_name }}</strong> (slug: <code>{{ category_slug }}</code>) hiện đang trong quá trình phát triển.</p>
-            <p>Trong tương lai, tại đây bạn sẽ có thể xem danh sách sản phẩm, thêm sản phẩm mới, sửa và xóa sản phẩm thuộc danh mục này.</p>
-
-            <a href="{{ url_for('product_dashboard_overview') }}" class="btn btn-secondary mt-3">
-                <i class="fas fa-arrow-left"></i> Quay lại Danh mục Lựa chọn
-            </a>
+    <div class="card mt-4" style="background-color: rgba(255,255,255,0.9);">
+        <div class="card-body">
+            <h5 class="card-title">Chức năng quản lý chi tiết</h5>
+            <p>Nội dung quản lý chi tiết cho danh mục <strong>{{ category_display_name }}</strong> (slug: <code>{{ category_slug }}</code>) sẽ được phát triển ở đây.</p>
+            <p>Ví dụ: danh sách sản phẩm, nút thêm/sửa/xóa sản phẩm...</p>
         </div>
     </div>
 </div>
@@ -40,9 +26,13 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const mainContent = document.getElementById('dashboardMainContent');
-        const bgImage = getComputedStyle(document.documentElement).getPropertyValue('--category-background-image').trim();
-        if (mainContent && bgImage && bgImage !== 'none' && bgImage !== '') {
+        // Lấy giá trị biến CSS từ root, đã được đặt trong layout.html
+        const bgImageStyle = getComputedStyle(document.documentElement).getPropertyValue('--category-background-image').trim();
+
+        if (mainContent && bgImageStyle && bgImageStyle !== 'none' && bgImageStyle !== '') {
             mainContent.classList.add('has-category-background');
+        } else {
+            mainContent.classList.remove('has-category-background');
         }
     });
 </script>

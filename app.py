@@ -93,6 +93,19 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (product_id) REFERENCES products (id)
 )
 """)
+c.execute("""
+CREATE TABLE IF NOT EXISTS scan_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    scanned_data TEXT NOT NULL,
+    product_id INTEGER, 
+    product_name_at_scan TEXT,
+    scan_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    user_id INTEGER, 
+    FOREIGN KEY (product_id) REFERENCES products (id),
+    FOREIGN KEY (user_id) REFERENCES users (id)
+)
+""")
+
 conn.commit()
 
 # --- Basic Routes ---
@@ -258,26 +271,36 @@ def product_dashboard_overview():
     if 'username' not in session:
         return redirect(url_for('login_page'))
 
-    return render_template('product_dashboard_content_tongquan.html', contextual_sidebar=None)
+    return render_template(
+        'product_dashboard_content_tongquan.html',
+        mobile_nav_type='main_dashboard_nav' # Nav dưới cho trang chính mobile
+    )
+
 CATEGORY_DETAILS = {
     "thuc-pham": {
         "display_name": "Hàng Thực phẩm",
-        "image_url": "URL_ANH_THUC_PHAM_CUA_BAN"
+        "image_url": "https://png.pngtree.com/thumb_back/fw800/background/20250408/pngtree-aisle-full-of-packaged-food-products-in-supermarket-image_17172476.jpg",
+        "description": "Quản lý các mặt hàng thực phẩm tươi sống, đóng gói, đồ uống và các sản phẩm liên quan. Theo dõi hạn sử dụng, số lượng tồn kho và nhập xuất hàng hóa."
     },
     "gia-dung": {
         "display_name": "Đồ gia dụng",
-        "image_url": "https://blog.dktcdn.net/files/nguon-hang-do-gia-dung-gia-re-1-e1507186249781.jpg"
+        "image_url": "https://blog.dktcdn.net/files/nguon-hang-do-gia-dung-gia-re-1-e1507186249781.jpg",
+        "description": "Quản lý các thiết bị, dụng cụ phục vụ cho gia đình như đồ điện tử gia dụng nhỏ, đồ dùng nhà bếp, vật dụng trang trí và các tiện ích khác."
     },
-    "sieu-thi": {
-        "display_name": "Hàng Siêu thị",
-        "image_url": "https://luatthanhthai.vn/wp-content/uploads/2023/12/sieu-thi-mini.jpg"
+    "thoi-trang": {
+        "display_name": "Thời trang",
+        "image_url": "https://spacet-release.s3.ap-southeast-1.amazonaws.com/img/blog/2023-10-03/anh-sang-hop-ly-tao-su-dang-cap-651beab8c9649b0ef5ad95c2.webp",
+        "description": "Quản lý các sản phẩm quần áo, giày dép, phụ kiện thời trang cho nam, nữ và trẻ em. Cập nhật xu hướng, mẫu mã và số lượng tồn kho."
     },
     "may-tinh-linh-kien": {
         "display_name": "Máy tính & Linh kiện",
-        "image_url": "https://maytinhgiaredanang.com/wp-content/uploads/2024/04/ve-sinh-may-tinh-pc-tai-da-nang.jpg"
+        "image_url": "https://maytinhgiaredanang.com/wp-content/uploads/2024/04/ve-sinh-may-tinh-pc-tai-da-nang.jpg",
+        "description": "Quản lý máy tính, laptop, linh kiện điện tử, thiết bị ngoại vi và các phụ kiện công nghệ. Theo dõi cấu hình, bảo hành và tồn kho."
     }
 }
 
+
+# Trong app.py
 @app.route('/quan-ly-san-pham/danh-muc/<string:category_slug>')
 def manage_category_placeholder(category_slug):
     if 'username' not in session:
@@ -289,14 +312,16 @@ def manage_category_placeholder(category_slug):
         flash("Danh mục không tồn tại.", "danger")
         return redirect(url_for('product_dashboard_overview'))
 
-    # Truyền thông tin cho layout để hiển thị đúng header và ảnh nền
-    return render_template('category_management_placeholder.html',
-                           category_slug=category_slug,
-                           category_display_name=category_info["display_name"],
-                           category_bg_image=category_info["image_url"],  # Biến này cho ảnh nền
-                           page_specific_title=f'Danh mục {category_info["display_name"]}'
-                           )
-
+    return render_template(
+        'category_management_page.html',
+        category_slug=category_slug,
+        category_display_name=category_info["display_name"],
+        category_bg_image=category_info["image_url"],
+        category_description=category_info["description"],
+        page_specific_title=f'{category_info["display_name"]}',
+        contextual_sidebar='category_management',
+        mobile_nav_type='category_detail_nav'  # << Quan trọng: để layout biết dùng nav nào
+    )
 
 @app.route('/quan-ly-san-pham/tong-quan/chi-tiet')
 def product_dashboard_overview_detail():
@@ -361,18 +386,34 @@ def pd_don_hang_gan_qr():
 def pd_ton_kho_quan_ly():
     if 'username' not in session:
         return redirect(url_for('login_page'))
-    # ... (code lấy dữ liệu tồn kho của bạn) ...
-    products_list = [] # Thay bằng dữ liệu thật
-    return render_template('product_dashboard_content_tonkho.html',
-                           products=products_list,
-                           contextual_sidebar=None) # Sidebar chính
-
+    c.execute("""
+        SELECT id, name, price, qty, category, product_id_internal, date_added, expiry_date, product_qr_code_path 
+        FROM products ORDER BY date_added DESC, name
+    """)
+    # ... (xử lý products_data)
+    products_list = [] # Thay thế bằng logic của bạn
+    for p_row in c.fetchall(): # Giả sử bạn đã fetchall()
+        # ... (xử lý từng p_row)
+        products_list.append({
+            'id': p_row[0], 'name': p_row[1], 'price': p_row[2], 'qty': p_row[3], 'category': p_row[4],
+            'product_id_internal': p_row[5], 'date_added': p_row[6], 'expiry_date': p_row[7],
+            'product_qr_code_path': p_row[8]
+        })
+    return render_template(
+        'product_dashboard_content_tonkho.html',
+        products=products_list,
+        contextual_sidebar=None,
+        mobile_nav_type='main_dashboard_nav' # << Thanh nav dưới cho trang này trên mobile
+    )
 
 @app.route('/quan-ly-san-pham/bao-cao')
 def pd_bao_cao_xem():
     if 'username' not in session:
         return redirect(url_for('login_page'))
-    return render_template('product_dashboard_content_baocao.html')
+    return render_template(
+        'product_dashboard_content_baocao.html',
+        mobile_nav_type='main_dashboard_nav'
+    )
 
 
 @app.route('/quan-ly-san-pham/thong-tin-ca-nhan')
@@ -407,7 +448,17 @@ def pd_nhap_san_pham_moi():
 def pd_nhap_kho_quet_page():
     if 'username' not in session:
         return redirect(url_for('login_page'))
-    return render_template('product_dashboard_content_scan_and_input.html')
+
+    context_slug_from_url = request.args.get('context_slug')
+    nav_type_to_use = 'category_context_nav' if context_slug_from_url else 'main_dashboard_nav'
+
+
+    return render_template(
+        'product_dashboard_content_scan_and_input.html',
+        contextual_sidebar='category_management',
+        mobile_nav_type=nav_type_to_use,
+        category_slug=context_slug_from_url
+    )
 
 @app.route('/quan-ly-san-pham/xuat-kho-qua-quet') # Route mới bạn yêu cầu
 def pd_xuat_kho_quet_page():
@@ -445,6 +496,73 @@ def view_product_details_by_qr(product_internal_id):
     # ... (code của bạn)
     # ... (phần còn lại của hàm)
     return render_template('view_product_by_qr.html', product=None)
+
+
+@app.route('/api/process-and-log-scan', methods=['POST'])
+def process_and_log_scan():
+    if 'username' not in session:
+        return jsonify({'error': 'Chưa đăng nhập'}), 401
+
+    try:
+        data = request.get_json()
+        scanned_data = data.get('scanned_data')
+
+        if not scanned_data:
+            return jsonify({'error': 'Không có dữ liệu mã quét'}), 400
+
+        # 1. Tra cứu sản phẩm trong bảng products
+        # Giả sử mã quét được có thể là product_id_internal hoặc barcode_data
+        c.execute("""
+            SELECT id, name, product_id_internal, barcode_data 
+            FROM products 
+            WHERE product_id_internal = ? OR barcode_data = ?
+        """, (scanned_data, scanned_data))
+        product = c.fetchone()
+
+        product_id_db = None
+        product_name_db = "Không tìm thấy sản phẩm"
+
+        if product:
+            product_id_db = product[0]
+            product_name_db = product[1]
+
+        # 2. Lấy user_id
+        user_id = None
+        if 'username' in session:
+            c.execute("SELECT id FROM users WHERE username = ?", (session['username'],))
+            user_obj = c.fetchone()
+            if user_obj:
+                user_id = user_obj[0]
+
+        # 3. Lưu vào bảng scan_log
+        c.execute("""
+            INSERT INTO scan_log (scanned_data, product_id, product_name_at_scan, user_id)
+            VALUES (?, ?, ?, ?)
+        """, (scanned_data, product_id_db, product_name_db, user_id))
+        conn.commit()
+
+        return jsonify({
+            'success': True,
+            'scanned_data': scanned_data,
+            'product_id': product_id_db,
+            'product_name': product_name_db,
+            'log_message': 'Đã lưu vào lịch sử quét.'
+        }), 200
+
+    except Exception as e:
+        app.logger.error(f"Error processing scan: {e}")
+        conn.rollback()  # Quan trọng nếu có lỗi CSDL
+        return jsonify({'error': f'Lỗi server: {str(e)}'}), 500
+
+
+@app.route('/mobile-scan-product')  # Hoặc một tên route khác bạn muốn
+def render_mobile_scan_page():
+    if 'username' not in session:
+        return redirect(url_for('login_page'))
+
+    # Lấy category_slug nếu có từ URL (để có thể quay lại đúng trang danh mục)
+    category_slug = request.args.get('category_slug')
+    return render_template('mobile_scan_screen.html', category_slug=category_slug)
 
 
 # --- Các route OTP đã được comment out hoặc xóa ---
