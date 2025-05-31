@@ -2,62 +2,119 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Đăng ký tài khoản</title>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Đăng ký tài khoản</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Quicksand', sans-serif;
-            background: linear-gradient(to right, #e3f2fd, #ffffff);
+            background: linear-gradient(to right, #e3f2fd, #f8f9fa); /* Nền chuyển nhẹ nhàng hơn */
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh; /* Đảm bảo full chiều cao */
             margin: 0;
+            padding: 20px; /* Thêm padding để form không dính sát viền trên mobile */
+            box-sizing: border-box;
         }
         .form-box {
             background: #ffffff;
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
+            padding: 30px 35px; /* Điều chỉnh padding */
+            border-radius: 10px; /* Bo góc mềm mại hơn */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+            max-width: 420px;
             width: 100%;
         }
         h2 {
             text-align: center;
-            color: #0288d1;
+            color: #0277bd; /* Màu xanh đậm hơn một chút */
+            margin-top: 0; /* Bỏ margin top mặc định */
+            margin-bottom: 25px; /* Tăng khoảng cách với form */
+            font-weight: 700;
+        }
+        .form-group {
+            margin-bottom: 18px; /* Khoảng cách giữa các nhóm input */
         }
         label {
             display: block;
-            margin-top: 12px;
+            margin-bottom: 6px; /* Khoảng cách giữa label và input */
             font-weight: 600;
+            font-size: 0.95em;
+            color: #333;
         }
-        input {
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="password"] {
             width: 100%;
-            padding: 10px;
-            margin-top: 6px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            padding: 12px; /* Tăng padding cho input */
+            /* margin-top: 6px; Bỏ vì đã có margin-bottom ở label */
+            border: 1px solid #ced4da; /* Màu border nhẹ hơn */
+            border-radius: 5px; /* Bo góc nhẹ cho input */
+            box-sizing: border-box; /* Quan trọng để padding không làm tăng width */
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
-        button {
-            margin-top: 20px;
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        input[type="password"]:focus {
+            border-color: #0288d1;
+            box-shadow: 0 0 0 0.2rem rgba(2, 136, 209, 0.25);
+            outline: none;
+        }
+        button[type="submit"] {
+            margin-top: 25px;
             width: 100%;
-            padding: 10px;
+            padding: 12px; /* Tăng padding cho button */
             background: #0288d1;
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 5px;
             font-size: 16px;
+            font-weight: 600; /* Chữ đậm hơn */
             cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        button[type="submit"]:hover {
+            background: #0277bd; /* Màu đậm hơn khi hover */
         }
         .error {
-            color: red;
-            margin-top: 10px;
+            color: #d9534f; /* Màu đỏ cho lỗi */
+            background-color: #f2dede; /* Nền nhạt cho lỗi */
+            border: 1px solid #ebccd1;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px; /* Đặt margin bottom thay vì top */
             text-align: center;
+            font-size: 0.9em;
         }
-        .captcha-image {
-            display: block;
+        .error:empty { /* Ẩn div error nếu không có nội dung */
+            display: none;
+        }
+        .captcha-container {
             margin-top: 10px;
+            display: flex;
+            align-items: center; /* Căn captcha image và input thẳng hàng */
+            gap: 10px; /* Khoảng cách giữa ảnh và input */
+        }
+        .captcha-container img {
+            border-radius: 5px; /* Bo góc cho ảnh captcha */
+            /* Không cần display: block; và margin-top ở đây nữa */
+        }
+        .captcha-container input[name="captcha"] {
+             margin-top: 0; /* Reset margin-top cho input captcha */
+        }
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9em;
+        }
+        .login-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .login-link a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -65,30 +122,47 @@
     <div class="form-box">
         <h2>Đăng ký tài khoản</h2>
 
-        <p class="error">{{ error }}</p>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
 
-        <form method="POST">
-            <label>Tên người dùng:</label>
-            <input type="text" name="username" value="{{ username_value }}" required>
+        <form method="POST" action="{{ url_for('register') }}">
+            <div class="form-group">
+                <label for="username">Tên người dùng:</label>
+                <input type="text" id="username" name="username" value="{{ form_data.username if form_data else '' }}" required>
+            </div>
 
-            <label>Email:</label>
-            <input type="email" name="email" value="{{ email_value }}" required>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" value="{{ form_data.email if form_data else '' }}" required>
+            </div>
 
-            <label>Số điện thoại:</label>
-            <input type="tel" name="phone" value="{{ phone_value }}" required>
+            <div class="form-group">
+                <label for="phone">Số điện thoại:</label>
+                <input type="tel" id="phone" name="phone" value="{{ form_data.phone if form_data else '' }}">
+            </div>
 
-            <label>Mật khẩu:</label>
-            <input type="password" name="password" required>
+            <div class="form-group">
+                <label for="password">Mật khẩu:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
 
-            <label>Nhập lại mật khẩu:</label>
-            <input type="password" name="confirm_password" required>
+            <div class="form-group">
+                <label for="confirm_password">Nhập lại mật khẩu:</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+            </div>
 
-            <label>Mã Captcha:</label>
-            <img src="{{ url_for('captcha') }}" alt="captcha" class="captcha-image"><br>
-            <input type="text" name="captcha" required>
+            <div class="form-group">
+                <label for="captcha">Mã Captcha:</label>
+                <div class="captcha-container">
+                    <img src="{{ url_for('captcha') }}" alt="captcha" class="captcha-image">
+                    <input type="text" id="captcha" name="captcha" required>
+                </div>
+            </div>
 
             <button type="submit">Tạo tài khoản</button>
         </form>
+        <p class="login-link">Đã có tài khoản? <a href="{{ url_for('login_page') }}">Đăng nhập ngay</a></p>
     </div>
 </body>
 </html>

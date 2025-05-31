@@ -151,57 +151,37 @@ def login_page():
 def generate_otp(length=6): # Giữ lại hàm này nếu sau này muốn dùng OTP
     return "".join(random.choices(string.digits, k=length))
 
+# Trong app.py
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     error = ''
+    # Lấy giá trị từ form nếu là POST, hoặc rỗng nếu là GET
     form_data = {
         'username': request.form.get('username', ''),
         'email': request.form.get('email', ''),
         'phone': request.form.get('phone', '')
     }
+
     if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        phone = request.form['phone']
+        # Lấy lại giá trị từ form để validation và giữ lại nếu có lỗi
+        username = form_data['username'] = request.form['username']
+        email = form_data['email'] = request.form['email']
+        phone = form_data['phone'] = request.form['phone']
         password = request.form['password']
         confirm_password = request.form['confirm_password']
         captcha_input = request.form['captcha']
         captcha_session = session.get('captcha_code', '')
 
-        if password != confirm_password: error = 'Mật khẩu không khớp.'
-        elif len(password) < 8: error = 'Mật khẩu phải có ít nhất 8 ký tự.'
-        elif not re.search(r'[A-Z]', password): error = 'Mật khẩu phải chứa ít nhất một chữ cái viết hoa.'
-        elif not re.search(r'[!@#$%^&*(),.?":{}|<>]', password): error = 'Mật khẩu phải chứa ít nhất một ký tự đặc biệt.'
-        elif captcha_input.upper() != captcha_session.upper(): error = 'Mã captcha không đúng.'
-        else:
-            c.execute("SELECT id FROM users WHERE username=? OR email=?", (username, email))
-            existing_user = c.fetchone()
-            if existing_user:
-                error = 'Tên người dùng hoặc email đã tồn tại.'
-            else:
-                try:
-                    hashed_password = generate_password_hash(password)
-                    c.execute(
-                        "INSERT INTO users (username, email, phone, password, is_verified) VALUES (?, ?, ?, ?, ?)",
-                        (username, email, phone, hashed_password, 1) # is_verified = 1 vì tạm bỏ OTP
-                    )
-                    conn.commit()
-                    session['username'] = username
-                    flash('Đăng ký thành công! Bạn đã được đăng nhập.', 'success')
-                    return redirect(url_for('product_dashboard_overview'))
-                except sqlite3.IntegrityError:
-                    error = 'Tên người dùng hoặc email đã tồn tại (lỗi CSDL).'
-                    conn.rollback()
-                except Exception as e:
-                    error = f'Lỗi trong quá trình đăng ký: {str(e)}'
-                    app.logger.error(f"Registration error: {e}")
-                    conn.rollback()
         if error:
             new_captcha_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
             session['captcha_code'] = new_captcha_code
+            # Truyền lại form_data và error vào template
             return render_template('register.html', error=error, form_data=form_data)
+
+    # Cho GET request
     new_captcha_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
     session['captcha_code'] = new_captcha_code
+    # Truyền form_data rỗng (hoặc giá trị mặc định) và error (nếu có từ lần trước)
     return render_template('register.html', error=error, form_data=form_data)
 
 @app.route('/logout')
@@ -560,31 +540,12 @@ def process_and_log_scan():
         return jsonify({'error': f'Lỗi server: {str(e)}'}), 500
 
 
-@app.route('/mobile-scan-product')  # Hoặc một tên route khác bạn muốn
+@app.route('/mobile-scan-product')
 def render_mobile_scan_page():
     if 'username' not in session:
         return redirect(url_for('login_page'))
 
-    # Lấy category_slug nếu có từ URL (để có thể quay lại đúng trang danh mục)
     category_slug = request.args.get('category_slug')
     return render_template('mobile_scan_screen.html', category_slug=category_slug)
-
-
-# --- Các route OTP đã được comment out hoặc xóa ---
-# @app.route('/verify-otp', methods=['GET'])
-# def verify_otp_page():
-#     # ...
-#     pass
-
-# @app.route('/verify-otp', methods=['POST'])
-# def verify_otp_submit():
-#     # ...
-#     pass
-
-# @app.route('/resend-otp')
-# def resend_otp():
-#     # ...
-#     pass
-
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
