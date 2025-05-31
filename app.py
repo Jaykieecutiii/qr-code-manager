@@ -276,51 +276,56 @@ def product_dashboard_overview():
         mobile_nav_type='main_dashboard_nav' # Nav dưới cho trang chính mobile
     )
 
+
+# Trong app.py
+
 CATEGORY_DETAILS = {
     "thuc-pham": {
         "display_name": "Hàng Thực phẩm",
         "image_url": "https://png.pngtree.com/thumb_back/fw800/background/20250408/pngtree-aisle-full-of-packaged-food-products-in-supermarket-image_17172476.jpg",
-        "description": "Quản lý các mặt hàng thực phẩm tươi sống, đóng gói, đồ uống và các sản phẩm liên quan. Theo dõi hạn sử dụng, số lượng tồn kho và nhập xuất hàng hóa."
+        "description": "Quản lý các mặt hàng thực phẩm..."
     },
     "gia-dung": {
         "display_name": "Đồ gia dụng",
         "image_url": "https://blog.dktcdn.net/files/nguon-hang-do-gia-dung-gia-re-1-e1507186249781.jpg",
-        "description": "Quản lý các thiết bị, dụng cụ phục vụ cho gia đình như đồ điện tử gia dụng nhỏ, đồ dùng nhà bếp, vật dụng trang trí và các tiện ích khác."
+        "description": "Quản lý các thiết bị, dụng cụ..."
     },
     "thoi-trang": {
         "display_name": "Thời trang",
         "image_url": "https://spacet-release.s3.ap-southeast-1.amazonaws.com/img/blog/2023-10-03/anh-sang-hop-ly-tao-su-dang-cap-651beab8c9649b0ef5ad95c2.webp",
-        "description": "Quản lý các sản phẩm quần áo, giày dép, phụ kiện thời trang cho nam, nữ và trẻ em. Cập nhật xu hướng, mẫu mã và số lượng tồn kho."
+        "description": "Quản lý các sản phẩm quần áo..."
     },
     "may-tinh-linh-kien": {
         "display_name": "Máy tính & Linh kiện",
         "image_url": "https://maytinhgiaredanang.com/wp-content/uploads/2024/04/ve-sinh-may-tinh-pc-tai-da-nang.jpg",
-        "description": "Quản lý máy tính, laptop, linh kiện điện tử, thiết bị ngoại vi và các phụ kiện công nghệ. Theo dõi cấu hình, bảo hành và tồn kho."
+        "description": "Quản lý máy tính, laptop..."
     }
 }
 
 
-# Trong app.py
 @app.route('/quan-ly-san-pham/danh-muc/<string:category_slug>')
 def manage_category_placeholder(category_slug):
     if 'username' not in session:
         return redirect(url_for('login_page'))
 
-    category_info = CATEGORY_DETAILS.get(category_slug)
+    category_info = CATEGORY_DETAILS.get(category_slug)  # Lấy thông tin dựa trên slug
 
     if not category_info:
         flash("Danh mục không tồn tại.", "danger")
         return redirect(url_for('product_dashboard_overview'))
+    print(f"DEBUG: Category Slug: {category_slug}")
+    print(f"DEBUG: Category Info: {category_info}")
+    print(f"DEBUG: Mobile Nav Type for this page: category_detail_nav")
 
     return render_template(
-        'category_management_page.html',
-        category_slug=category_slug,
+        'category_management_page.html',  # Template hiển thị chi tiết danh mục
+        category_slug=category_slug,  # << QUAN TRỌNG: Truyền slug này
         category_display_name=category_info["display_name"],
         category_bg_image=category_info["image_url"],
         category_description=category_info["description"],
         page_specific_title=f'{category_info["display_name"]}',
-        contextual_sidebar='category_management',
-        mobile_nav_type='category_detail_nav'  # << Quan trọng: để layout biết dùng nav nào
+        # contextual_sidebar='category_management', # Cho sidebar desktop nếu cần
+        mobile_nav_type='category_detail_nav'  # << QUAN TRỌNG: Để layout biết dùng nav nào cho mobile
     )
 
 @app.route('/quan-ly-san-pham/tong-quan/chi-tiet')
@@ -551,7 +556,7 @@ def process_and_log_scan():
 
     except Exception as e:
         app.logger.error(f"Error processing scan: {e}")
-        conn.rollback()  # Quan trọng nếu có lỗi CSDL
+        conn.rollback()
         return jsonify({'error': f'Lỗi server: {str(e)}'}), 500
 
 

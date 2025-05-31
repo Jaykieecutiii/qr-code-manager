@@ -94,7 +94,7 @@
             {% endblock %}
         </main>
 
-        {% if mobile_nav_type == 'main_dashboard_nav' %}
+       {% if mobile_nav_type == 'main_dashboard_nav' %}
         <nav class="mobile-bottom-nav mobile-only-element">
             <a href="{{ url_for('product_dashboard_overview') }}" class="nav-item {{ 'active' if request.endpoint == 'product_dashboard_overview' else '' }}">
                 <i class="fas fa-th-list"></i>
@@ -115,7 +115,7 @@
                 <i class="fas fa-home"></i>
                 <span class="nav-text">Trang chủ</span>
             </a>
-            <a href="{{ url_for('render_mobile_scan_page', category_slug=category_slug if category_slug else None ) }}" class="nav-item nav-item-main {{ 'active' if request.endpoint == 'render_mobile_scan_page' else '' }}">
+            <a href="{{ url_for('pd_nhap_kho_quet_page', category_slug=category_slug if category_slug else None ) }}" class="nav-item nav-item-main {{ 'active' if request.endpoint == 'pd_nhap_kho_quet_page' else '' }}">
                 <div class="icon-wrapper">
                     <i class="fas fa-qrcode"></i>
                     <span class="nav-text">Quét Mã</span>
