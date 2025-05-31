@@ -115,10 +115,10 @@
                 <i class="fas fa-home"></i>
                 <span class="nav-text">Trang chủ</span>
             </a>
-            <a href="{{ url_for('pd_nhap_kho_quet_page', category_slug=category_slug if category_slug else None ) }}" class="nav-item nav-item-main {{ 'active' if request.endpoint == 'pd_nhap_kho_quet_page' else '' }}">
-                <div class="icon-wrapper">
-                    <i class="fas fa-qrcode"></i>
-                    <span class="nav-text">Quét Mã</span>
+            <a href="{{ url_for('render_mobile_scan_page', category_slug=category_slug if category_slug else None ) }}" class="nav-item nav-item-main {{ 'active' if request.endpoint == 'render_mobile_scan_page' else '' }}">
+        <div class="icon-wrapper">
+            <i class="fas fa-qrcode"></i>
+            <span class="nav-text">Quét Mã</span>
                 </div>
             </a>
             <a href="{{ url_for('product_dashboard_overview_detail') }}" class="nav-item">

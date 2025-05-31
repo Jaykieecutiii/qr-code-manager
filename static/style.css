@@ -277,3 +277,69 @@ body.mobile-nav-open {
     .mobile-bottom-nav .nav-item.nav-item-main .icon-wrapper { width: 50px; height: 50px; margin-top: -22px;}
     .mobile-bottom-nav .nav-item.nav-item-main .icon-wrapper i { font-size: 20px; }
 }
+body {
+}
+.mobile-only-element {
+    display: none !important;
+}
+
+@media (max-width: 991.98px) {
+    .desktop-only-element {
+        display: none !important;
+    }
+    .mobile-only-element {
+        display: flex !important;
+    }
+
+    .dashboard-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    .dashboard-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1001;
+    }
+    .dashboard-header .header-title h1 {
+        font-size: 18px;
+    }
+    .dashboard-header .header-user span.desktop-only-element {
+        display: none !important;
+    }
+     .dashboard-header .header-user .fa-user-circle {
+        margin-right: 0;
+    }
+
+
+    .dashboard-main {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding-top: 70px;
+        padding-bottom: 75px;
+        padding-right: 15px;
+    }
+
+    .dashboard-main.has-category-background {
+    }
+    .dashboard-main.has-category-background .category-content-wrapper {
+    }
+
+    .category-column-grid {
+        max-width: 100%;
+        margin-top: 0;
+    }
+    .category-column-card {
+        height: 180px;
+    }
+
+    .form-control, .btn {
+    }
+
+    .mobile-bottom-nav {
+    }
+
+}

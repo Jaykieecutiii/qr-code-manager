@@ -100,12 +100,13 @@ CREATE TABLE IF NOT EXISTS scan_log (
     product_id INTEGER, 
     product_name_at_scan TEXT,
     scan_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    user_id INTEGER, 
+    user_id INTEGER,
+    action_type TEXT,  -- 'nhap' hoặc 'xuat'
+    quantity_changed INTEGER,
     FOREIGN KEY (product_id) REFERENCES products (id),
     FOREIGN KEY (user_id) REFERENCES users (id)
 )
 """)
-
 conn.commit()
 
 # --- Basic Routes ---
@@ -591,8 +592,104 @@ def process_and_log_scan():
 def render_mobile_scan_page():
     if 'username' not in session:
         return redirect(url_for('login_page'))
-
     category_slug = request.args.get('category_slug')
     return render_template('mobile_scan_screen.html', category_slug=category_slug)
+@app.route('/api/get-product-info-from-scan', methods=['POST'])
+def get_product_info_from_scan():
+    if 'username' not in session:
+        return jsonify({'error': 'Chưa đăng nhập'}), 401
+
+    data = request.get_json()
+    scanned_data = data.get('scanned_data')
+
+    if not scanned_data:
+        return jsonify({'error': 'Không có dữ liệu mã quét'}), 400
+
+    # Tra cứu sản phẩm
+    c.execute("""
+        SELECT id, name, product_id_internal, barcode_data 
+        FROM products 
+        WHERE product_id_internal = ? OR barcode_data = ?
+    """, (scanned_data, scanned_data))
+    product = c.fetchone()
+
+    if product:
+        return jsonify({
+            'success': True,
+            'product_id': product[0],
+            'product_name': product[1],
+            'scanned_data': scanned_data
+        }), 200
+    else:
+        return jsonify({'error': 'Sản phẩm không tồn tại trong hệ thống'}), 404
+# Trong app.py
+@app.route('/api/update-inventory-and-log', methods=['POST'])
+def update_inventory_and_log():
+    if 'username' not in session:
+        return jsonify({'error': 'Chưa đăng nhập'}), 401
+
+    try:
+        data = request.get_json()
+        scanned_data = data.get('scanned_data')
+        product_id = data.get('product_id') # Có thể là None nếu sản phẩm mới toanh
+        product_name_from_scan = data.get('product_name', 'Sản phẩm không rõ') # Tên từ client
+        action = data.get('action') # 'nhap' hoặc 'xuat'
+        quantity = int(data.get('quantity', 0))
+
+        if not scanned_data or not action or quantity <= 0:
+            return jsonify({'error': 'Dữ liệu không hợp lệ'}), 400
+
+        user_id = None
+        c.execute("SELECT id FROM users WHERE username = ?", (session['username'],))
+        user_obj = c.fetchone()
+        if user_obj: user_id = user_obj[0]
+
+        final_product_name = product_name_from_scan
+
+        if action == 'nhap':
+            if product_id:
+                c.execute("UPDATE products SET qty = qty + ? WHERE id = ?", (quantity, product_id))
+                # Lấy lại tên chính xác từ DB nếu cần
+                c.execute("SELECT name FROM products WHERE id = ?", (product_id,))
+                prod_db_name = c.fetchone()
+                if prod_db_name: final_product_name = prod_db_name[0]
+            else:
+                # Nếu sản phẩm không có ID (ví dụ: quét mã vạch lạ, muốn tạo mới khi nhập)
+                # Bạn cần thêm logic tạo sản phẩm mới ở đây nếu muốn
+                # Hiện tại, chúng ta sẽ báo lỗi nếu không có product_id cho việc nhập
+                return jsonify({'error': 'Không thể nhập hàng cho sản phẩm không tồn tại. Hãy thêm sản phẩm trước.'}), 400
+            log_message = f"Đã nhập {quantity} sản phẩm '{final_product_name}'."
+
+        elif action == 'xuat':
+            if not product_id:
+                return jsonify({'error': 'Sản phẩm không tồn tại để xuất kho.'}), 400
+
+            c.execute("SELECT name, qty FROM products WHERE id = ?", (product_id,))
+            product_to_export = c.fetchone()
+            if not product_to_export:
+                return jsonify({'error': 'Sản phẩm không tồn tại trong kho.'}), 404
+
+            final_product_name = product_to_export[0]
+            if product_to_export[1] < quantity:
+                return jsonify({'error': f"Không đủ số lượng '{final_product_name}' để xuất. Tồn kho: {product_to_export[1]}"}), 400
+
+            c.execute("UPDATE products SET qty = qty - ? WHERE id = ?", (quantity, product_id))
+            log_message = f"Đã xuất {quantity} sản phẩm '{final_product_name}'."
+        else:
+            return jsonify({'error': 'Hành động không hợp lệ'}), 400
+
+        # Lưu vào bảng scan_log
+        c.execute("""
+            INSERT INTO scan_log (scanned_data, product_id, product_name_at_scan, user_id, action_type, quantity_changed) 
+            VALUES (?, ?, ?, ?, ?, ?) 
+        """, (scanned_data, product_id, final_product_name, user_id, action, quantity)) # Giả sử bạn thêm cột action_type và quantity_changed
+
+        conn.commit()
+        return jsonify({'success': True, 'message': log_message}), 200
+
+    except Exception as e:
+        app.logger.error(f"Error updating inventory: {e}")
+        conn.rollback()
+        return jsonify({'error': f'Lỗi server: {str(e)}'}), 500
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
