@@ -15,13 +15,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
     :root {
-        --category-background-image: {% if category_bg_image %}url('{{ category_bg_image | e }}'){% else %}none{% endif %};
-        /* Giải thích:
-           - Nếu category_bg_image tồn tại, nó sẽ gán ví dụ: --category-background-image: url('https://link_den_anh.jpg');
-           - Nếu category_bg_image KHÔNG tồn tại, nó sẽ gán: --category-background-image: none;
-           - Bộ lọc `| e` (hoặc `| escape`) là để đảm bảo URL ảnh được escape đúng cách, tránh lỗi XSS tiềm ẩn.
-        */
-    }
+        --category-background-image: {% if category_bg_image %};url('{{ category_bg_image | e }}'){% else %}none{% endif %};}
+
     </style>
     <title>{% block page_specific_title %}Quản lý sản phẩm{% endblock %}</title>
 </head>
@@ -62,7 +57,6 @@
                         <a href="#"><i class="fas fa-exchange-alt"></i><span>Nhập/Xuất Kho</span> <i class="fas fa-angle-down arrow"></i></a>
                         <ul class="submenu">
                             <li><a href="{{ url_for('pd_nhap_kho_quet_page') }}">Nhập kho bằng quét mã</a></li>
-                            <li><a href="{{ url_for('pd_nhap_san_pham_moi') }}">Nhập sản phẩm mới</a></li>
                             <li><a href="{{ url_for('pd_xuat_kho_quet_page') }}">Xuất kho bằng mã</a></li>
                         </ul>
                     </li>
@@ -93,22 +87,19 @@
         </main>
 
         <nav class="mobile-bottom-nav mobile-only-element">
-            <a href="{{ url_for('product_dashboard_overview') }}" class="nav-item {{ 'active' if request.endpoint == 'product_dashboard_overview' else '' }}">
-                <i class="fas fa-th-large"></i>
-                <span class="nav-text">Danh mục</span>
+            <a href="{{ url_for('product_dashboard_overview') }}" class="nav-item {{ 'active' if request.endpoint == 'product_dashboard_overview' or request.endpoint == 'manage_category_placeholder' else '' }}">
+                <i class="fas fa-th-list"></i> <span class="nav-text">Danh mục</span>
             </a>
-            <a href="{{ url_for('pd_nhap_kho_quet_page') }}" class="nav-item nav-item-main {{ 'active' if request.endpoint == 'pd_nhap_kho_quet_page' else '' }}">
-                <i class="fas fa-qrcode"></i>
-                <span class="nav-text">Quét Mã</span>
+            <a href="{{ url_for('pd_bao_cao_xem') }}" class="nav-item {{ 'active' if request.endpoint == 'pd_bao_cao_xem' else '' }}">
+                <i class="fas fa-chart-pie"></i> <span class="nav-text">Báo cáo</span>
             </a>
-            <a href="{{ url_for('product_dashboard_overview_detail') }}" class="nav-item {{ 'active' if request.endpoint == 'product_dashboard_overview_detail' else '' }}">
-                <i class="fas fa-chart-bar"></i> <span class="nav-text">Thống Kê</span>
+            <a href="{{ url_for('pd_user_profile') }}" class="nav-item {{ 'active' if request.endpoint == 'pd_user_profile' else '' }}">
+                <i class="fas fa-user"></i> <span class="nav-text">Tôi</span>
             </a>
         </nav>
     </div>
 
     <script>
-    // JavaScript để xử lý đóng mở submenu desktop (nếu dùng click)
     document.addEventListener('DOMContentLoaded', function() {
         const sidebarItemsWithSubmenu = document.querySelectorAll('.dashboard-sidebar .sidebar-item.has-submenu > a');
         sidebarItemsWithSubmenu.forEach(item => {

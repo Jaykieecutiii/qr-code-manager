@@ -260,9 +260,9 @@ def product_dashboard_overview():
 
     return render_template('product_dashboard_content_tongquan.html', contextual_sidebar=None)
 CATEGORY_DETAILS = {
-    "thoi-trang": {
-        "display_name": "Thời trang",
-        "image_url": "https://file.hstatic.net/1000253775/file/hoi-trang-nam-tai-ha-noi-360-boutique_279e611939e5435b976f72e211d9178a.jpg"
+    "thuc-pham": {
+        "display_name": "Hàng Thực phẩm",
+        "image_url": "URL_ANH_THUC_PHAM_CUA_BAN"
     },
     "gia-dung": {
         "display_name": "Đồ gia dụng",
@@ -276,9 +276,7 @@ CATEGORY_DETAILS = {
         "display_name": "Máy tính & Linh kiện",
         "image_url": "https://maytinhgiaredanang.com/wp-content/uploads/2024/04/ve-sinh-may-tinh-pc-tai-da-nang.jpg"
     }
-    # Thêm các danh mục khác nếu có
 }
-
 
 @app.route('/quan-ly-san-pham/danh-muc/<string:category_slug>')
 def manage_category_placeholder(category_slug):
