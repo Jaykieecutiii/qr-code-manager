@@ -232,39 +232,68 @@ body.mobile-nav-open {
 }
 
 .mobile-bottom-nav {
-    grid-area: bottomnav;
+   grid-area: bottomnav;
     position: fixed; bottom: 0; left: 0; right: 0;
     background-color: var(--header-bg);
     color: rgba(255, 255, 255, 0.7);
     box-shadow: 0 -2px 5px rgba(0,0,0,0.15);
-    height: 60px;
+    height: 60px; /* Chiều cao của thanh nav */
     z-index: 1000;
+    display: flex; /* Đã được .mobile-only-element xử lý */
     justify-content: space-around;
     align-items: stretch;
 }
 .mobile-bottom-nav .nav-item {
+    /* ... style hiện có ... */
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     flex: 1; color: inherit; text-decoration: none;
     padding: 4px 0; transition: color 0.2s; text-align: center;
     background: none; border: none; cursor: pointer;
+    position: relative; /* Để các item con không bị ảnh hưởng bởi nút nổi */
 }
 .mobile-bottom-nav .nav-item i { font-size: 20px; margin-bottom: 3px; }
 .mobile-bottom-nav .nav-item .nav-text { font-size: 10px; line-height: 1.2; }
 .mobile-bottom-nav .nav-item.active,
-.mobile-bottom-nav .nav-item:hover { color: var(--text-light); }
-
-.mobile-bottom-nav .nav-item.nav-item-main { position: relative; }
-.mobile-bottom-nav .nav-item.nav-item-main .icon-wrapper {
-    width: 56px; height: 56px; background-color: var(--primary-color);
-    border-radius: 50%; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    box-shadow: 0 -1px 8px rgba(0,0,0,0.25); margin-top: -25px;
-    border: 3px solid var(--header-bg); color: var(--text-light);
+.mobile-bottom-nav .nav-item:hover {
+    color: var(--text-light);
 }
-.mobile-bottom-nav .nav-item.nav-item-main .icon-wrapper i { font-size: 22px; margin-bottom: 2px; }
-.mobile-bottom-nav .nav-item.nav-item-main .icon-wrapper .nav-text { font-size: 9px; font-weight: 500; margin-top: -2px; }
+.mobile-bottom-nav .nav-item.nav-item-main {}
+
+.mobile-bottom-nav .nav-item.nav-item-main .icon-wrapper {
+    width: 60px;  /* Kích thước lớn hơn một chút */
+    height: 60px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.3); /* Bóng đổ rõ hơn */
+
+    position: absolute; /* Để nổi lên */
+    bottom: 8px;      /* Khoảng cách từ đáy của .nav-item cha, điều chỉnh để "nổi" lên */
+    left: 50%;
+    transform: translateX(-50%); /* Canh giữa chính xác */
+
+    border: 4px solid var(--header-bg); /* Viền cùng màu nền bottom nav để tạo hiệu ứng "cắt" */
+    color: var(--text-light);
+    cursor: pointer;
+    z-index: 1; /* Nằm trên các item khác một chút */
+}
+.mobile-bottom-nav .nav-item.nav-item-main .icon-wrapper i {
+    font-size: 24px;
+    margin-bottom: 2px;
+}
+.mobile-bottom-nav .nav-item.nav-item-main .icon-wrapper .nav-text {
+    font-size: 9px;
+    font-weight: 500;
+    margin-top: 0px;
+}
+
 .mobile-bottom-nav .nav-item.nav-item-main.active .icon-wrapper,
-.mobile-bottom-nav .nav-item.nav-item-main:hover .icon-wrapper { background-color: var(--primary-darker); }
+.mobile-bottom-nav .nav-item.nav-item-main:hover .icon-wrapper {
+    background-color: var(--primary-darker);
+}
 
 @media (max-width: 360px) {
     .dashboard-header .header-title h1 { font-size: 16px; }
