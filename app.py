@@ -148,40 +148,87 @@ def login_page():
             error = 'Tên tài khoản hoặc mật khẩu không đúng.'
     return render_template('login.html', error=error, username_value=username_value)
 
-def generate_otp(length=6): # Giữ lại hàm này nếu sau này muốn dùng OTP
+
+def generate_otp(length=6):  # Hàm này có thể vẫn cần nếu bạn dùng lại OTP sau này, cứ để đó
     return "".join(random.choices(string.digits, k=length))
 
-# Trong app.py
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     error = ''
-    # Lấy giá trị từ form nếu là POST, hoặc rỗng nếu là GET
-    form_data = {
-        'username': request.form.get('username', ''),
-        'email': request.form.get('email', ''),
-        'phone': request.form.get('phone', '')
-    }
+    # Khởi tạo form_data để giữ giá trị người dùng nhập nếu có lỗi
+    # hoặc để truyền giá trị rỗng cho lần tải trang đầu tiên (GET request)
+    if request.method == 'POST':
+        form_data = {
+            'username': request.form.get('username', ''),
+            'email': request.form.get('email', ''),
+            'phone': request.form.get('phone', '')
+        }
+        username = form_data['username']
+        email = form_data['email']
+        phone = form_data['phone']
+        password = request.form.get('password', '')  # Dùng .get để tránh lỗi nếu thiếu
+        confirm_password = request.form.get('confirm_password', '')
+        captcha_input = request.form.get('captcha', '')
+        captcha_session = session.get('captcha_code', '')
+    else:  # Cho GET request
+        form_data = {'username': '', 'email': '', 'phone': ''}
 
     if request.method == 'POST':
-        # Lấy lại giá trị từ form để validation và giữ lại nếu có lỗi
-        username = form_data['username'] = request.form['username']
-        email = form_data['email'] = request.form['email']
-        phone = form_data['phone'] = request.form['phone']
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
-        captcha_input = request.form['captcha']
-        captcha_session = session.get('captcha_code', '')
+        # 1. Bắt đầu Validate dữ liệu
+        if not username or not email or not password or not confirm_password or not captcha_input:
+            error = 'Vui lòng điền đầy đủ các trường bắt buộc.'
+        elif password != confirm_password:
+            error = 'Mật khẩu không khớp.'
+        elif len(password) < 8:
+            error = 'Mật khẩu phải có ít nhất 8 ký tự.'
+        elif not re.search(r'[A-Z]', password):
+            error = 'Mật khẩu phải chứa ít nhất một chữ cái viết hoa.'
+        elif not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+            error = 'Mật khẩu phải chứa ít nhất một ký tự đặc biệt.'
+        elif captcha_input.upper() != captcha_session.upper():
+            error = 'Mã captcha không đúng.'
 
-        if error:
-            new_captcha_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
-            session['captcha_code'] = new_captcha_code
-            # Truyền lại form_data và error vào template
-            return render_template('register.html', error=error, form_data=form_data)
+        if not error:  # Nếu không có lỗi validation cơ bản ở trên
+            # 2. Kiểm tra username/email đã tồn tại trong database chưa
+            c.execute("SELECT id FROM users WHERE username=? OR email=?", (username, email))
+            existing_user = c.fetchone()
+            if existing_user:
+                error = 'Tên người dùng hoặc email đã tồn tại.'
+            else:
+                # 3. Nếu không có lỗi gì, tiến hành tạo tài khoản
+                try:
+                    hashed_password = generate_password_hash(password)  # Mã hóa mật khẩu
+                    # Thêm is_verified=1 để tài khoản được coi là đã xác thực (vì tạm bỏ OTP)
+                    c.execute(
+                        "INSERT INTO users (username, email, phone, password, is_verified) VALUES (?, ?, ?, ?, ?)",
+                        (username, email, phone, hashed_password, 1)  # is_verified = 1
+                    )
+                    conn.commit()
 
-    # Cho GET request
+                    # Đăng nhập cho người dùng sau khi đăng ký thành công
+                    session['username'] = username
+
+                    flash('Đăng ký thành công! Bạn đã được đăng nhập.', 'success')
+
+                    # CHUYỂN HƯỚNG SANG GIAO DIỆN NGƯỜI DÙNG (DASHBOARD)
+                    return redirect(url_for('product_dashboard_overview'))  # Hoặc tên route dashboard của bạn
+
+                except sqlite3.IntegrityError:  # Bắt lỗi cụ thể hơn nếu có thể
+                    error = 'Tên người dùng hoặc email đã tồn tại (lỗi ràng buộc CSDL).'
+                    conn.rollback()
+                except Exception as e:
+                    error = f'Lỗi không xác định trong quá trình đăng ký: {str(e)}'
+                    app.logger.error(f"Registration error: {e}")  # Ghi log lỗi server
+                    conn.rollback()
+
+    # Nếu là GET request, hoặc nếu có lỗi xảy ra trong POST request (error != '')
+    # thì sẽ chạy đến đây để render lại trang đăng ký
+
+    # Tạo mã captcha mới cho mỗi lần tải trang hoặc khi có lỗi
     new_captcha_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
     session['captcha_code'] = new_captcha_code
-    # Truyền form_data rỗng (hoặc giá trị mặc định) và error (nếu có từ lần trước)
+
     return render_template('register.html', error=error, form_data=form_data)
 
 @app.route('/logout')
