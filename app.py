@@ -1,5 +1,5 @@
 from flask_mail import Mail, Message # Giữ lại nếu sau này dùng, hoặc xóa nếu không bao giờ dùng nữa
-from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify, make_response
 from captcha.image import ImageCaptcha
 import random
 import string
@@ -21,24 +21,23 @@ def generate_internal_product_id():
 
 
 app = Flask(__name__)
+@app.after_request
+def add_security_headers(response):
+    # Cho phép truy cập camera
+    response.headers['Permissions-Policy'] = 'camera=(self)'
+    return response
+
+@app.route("/")
+def scan_page():
+    # Trả về giao diện quét QR
+    response = make_response(render_template("mobile_scan_screen.html"))
+    return response
+
+
 app.secret_key = 'your_very_secret_and_complex_key_here_CHANGE_ME'
-
-# Tạm thời comment out cấu hình Mail nếu bạn đã bỏ OTP và không dùng gửi mail ở đâu khác
-# app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-# app.config['MAIL_PORT'] = 587
-# app.config['MAIL_USE_TLS'] = True
-# app.config['MAIL_USERNAME'] = os.environ.get('GMAIL_USERNAME')
-# app.config['MAIL_PASSWORD'] = os.environ.get('GMAIL_APP_PASSWORD')
-# app.config['MAIL_DEFAULT_SENDER'] = ('Quản lý QR', app.config['MAIL_USERNAME'])
-
-# print(f"--- INFO: Mail username set to: {os.environ.get('GMAIL_USERNAME')} ---")
-
-# mail = Mail(app) # Tạm thời comment out
 
 conn = sqlite3.connect('sales.db', check_same_thread=False) # Nên cân nhắc chuyển 'sales.db' thành biến
 c = conn.cursor()
-
-# --- Database Schema ---
 c.execute("""
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -50,21 +49,20 @@ CREATE TABLE IF NOT EXISTS users (
 )
 """)
 
-c.execute("""
-CREATE TABLE IF NOT EXISTS products (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, 
-    name TEXT NOT NULL, 
-    price REAL DEFAULT 0, 
-    qty INTEGER DEFAULT 0,
-    category TEXT,
-    product_id_internal TEXT UNIQUE,
-    date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    expiry_date DATE,
-    product_qr_code_path TEXT,
-    barcode_data TEXT,          -- Thêm cột này nếu bạn dùng cho process_scanned_product_barcode
-    volume_weight TEXT          -- Thêm cột này nếu bạn dùng cho process_scanned_product_barcode
-)
-""") # Đã thêm barcode_data và volume_weight vào đây nếu cần
+# c.execute("""
+# CREATE TABLE IF NOT EXISTS products (
+#     id INTEGER PRIMARY KEY AUTOINCREMENT,
+#     name TEXT NOT NULL,
+#     price REAL DEFAULT 0,
+#     qty INTEGER DEFAULT 0,
+#     category TEXT,
+#     product_id_internal TEXT UNIQUE,
+#     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+#     expiry_date DATE,
+#     product_qr_code_path TEXT,
+#     barcode_data TEXT,
+#     volume_weight TEXT
+# """)
 
 c.execute("""
 CREATE TABLE IF NOT EXISTS orders (
@@ -101,7 +99,7 @@ CREATE TABLE IF NOT EXISTS scan_log (
     product_name_at_scan TEXT,
     scan_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     user_id INTEGER,
-    action_type TEXT,  -- 'nhap' hoặc 'xuat'
+    action_type TEXT,  
     quantity_changed INTEGER,
     FOREIGN KEY (product_id) REFERENCES products (id),
     FOREIGN KEY (user_id) REFERENCES users (id)
@@ -109,7 +107,6 @@ CREATE TABLE IF NOT EXISTS scan_log (
 """)
 conn.commit()
 
-# --- Basic Routes ---
 @app.route('/captcha')
 def captcha():
     image = ImageCaptcha(width=180, height=70)
@@ -122,7 +119,6 @@ def captcha():
 def index():
     return render_template('index.html')
 
-# --- Auth Routes ---
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
     error = None
@@ -150,15 +146,13 @@ def login_page():
     return render_template('login.html', error=error, username_value=username_value)
 
 
-def generate_otp(length=6):  # Hàm này có thể vẫn cần nếu bạn dùng lại OTP sau này, cứ để đó
+def generate_otp(length=6):
     return "".join(random.choices(string.digits, k=length))
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     error = ''
-    # Khởi tạo form_data để giữ giá trị người dùng nhập nếu có lỗi
-    # hoặc để truyền giá trị rỗng cho lần tải trang đầu tiên (GET request)
     if request.method == 'POST':
         form_data = {
             'username': request.form.get('username', ''),
@@ -172,11 +166,10 @@ def register():
         confirm_password = request.form.get('confirm_password', '')
         captcha_input = request.form.get('captcha', '')
         captcha_session = session.get('captcha_code', '')
-    else:  # Cho GET request
+    else:
         form_data = {'username': '', 'email': '', 'phone': ''}
 
     if request.method == 'POST':
-        # 1. Bắt đầu Validate dữ liệu
         if not username or not email or not password or not confirm_password or not captcha_input:
             error = 'Vui lòng điền đầy đủ các trường bắt buộc.'
         elif password != confirm_password:
@@ -190,43 +183,34 @@ def register():
         elif captcha_input.upper() != captcha_session.upper():
             error = 'Mã captcha không đúng.'
 
-        if not error:  # Nếu không có lỗi validation cơ bản ở trên
-            # 2. Kiểm tra username/email đã tồn tại trong database chưa
+        if not error:
             c.execute("SELECT id FROM users WHERE username=? OR email=?", (username, email))
             existing_user = c.fetchone()
             if existing_user:
                 error = 'Tên người dùng hoặc email đã tồn tại.'
             else:
-                # 3. Nếu không có lỗi gì, tiến hành tạo tài khoản
                 try:
-                    hashed_password = generate_password_hash(password)  # Mã hóa mật khẩu
-                    # Thêm is_verified=1 để tài khoản được coi là đã xác thực (vì tạm bỏ OTP)
+                    hashed_password = generate_password_hash(password)
                     c.execute(
                         "INSERT INTO users (username, email, phone, password, is_verified) VALUES (?, ?, ?, ?, ?)",
                         (username, email, phone, hashed_password, 1)  # is_verified = 1
                     )
                     conn.commit()
 
-                    # Đăng nhập cho người dùng sau khi đăng ký thành công
                     session['username'] = username
 
                     flash('Đăng ký thành công! Bạn đã được đăng nhập.', 'success')
 
-                    # CHUYỂN HƯỚNG SANG GIAO DIỆN NGƯỜI DÙNG (DASHBOARD)
-                    return redirect(url_for('product_dashboard_overview'))  # Hoặc tên route dashboard của bạn
+                    return redirect(url_for('product_dashboard_overview'))
 
-                except sqlite3.IntegrityError:  # Bắt lỗi cụ thể hơn nếu có thể
+                except sqlite3.IntegrityError:
                     error = 'Tên người dùng hoặc email đã tồn tại (lỗi ràng buộc CSDL).'
                     conn.rollback()
                 except Exception as e:
                     error = f'Lỗi không xác định trong quá trình đăng ký: {str(e)}'
-                    app.logger.error(f"Registration error: {e}")  # Ghi log lỗi server
+                    app.logger.error(f"Registration error: {e}")
                     conn.rollback()
 
-    # Nếu là GET request, hoặc nếu có lỗi xảy ra trong POST request (error != '')
-    # thì sẽ chạy đến đây để render lại trang đăng ký
-
-    # Tạo mã captcha mới cho mỗi lần tải trang hoặc khi có lỗi
     new_captcha_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
     session['captcha_code'] = new_captcha_code
 
@@ -238,7 +222,6 @@ def logout():
     flash("Bạn đã đăng xuất.", "info")
     return redirect(url_for('index'))
 
-# --- Tool Routes (Giữ nguyên) ---
 @app.route('/qr-generator-tool', methods=['GET', 'POST'])
 def qr_generator_tool():
     # ... (code của bạn)
@@ -249,10 +232,7 @@ def qr_generator_tool():
         data = request.form['data']
         if data:
             img = qrcode.make(data)
-            # Đảm bảo app.static_folder được Flask hiểu đúng
-            # Nếu bạn dùng app = Flask(__name__), static_folder mặc định là 'static'
-            # img_path_on_disk = os.path.join(app.static_folder, 'qr_tool_generated.png')
-            # Tạm thời dùng đường dẫn tương đối nếu app.static_folder không được setup đúng
+
             static_dir = os.path.join(os.path.dirname(__file__), 'static')
             if not os.path.exists(static_dir): os.makedirs(static_dir)
             img_path_on_disk = os.path.join(static_dir, 'qr_tool_generated.png')
@@ -291,8 +271,6 @@ def sales_management_tool():
     products_list = [{'id': p[0], 'name': p[1], 'price': p[2], 'qty': p[3], 'category': p[4]} for p in products_data]
     return render_template('sales_tool.html', products=products_list)
 
-
-# --- Product Management Dashboard Routes ---
 @app.route('/quan-ly-san-pham/')
 @app.route('/quan-ly-san-pham/tong-quan')
 def product_dashboard_overview():
@@ -303,10 +281,6 @@ def product_dashboard_overview():
         'product_dashboard_content_tongquan.html',
         mobile_nav_type='main_dashboard_nav' # Nav dưới cho trang chính mobile
     )
-
-
-# Trong app.py
-
 CATEGORY_DETAILS = {
     "thuc-pham": {
         "display_name": "Hàng Thực phẩm",
@@ -346,14 +320,14 @@ def manage_category_placeholder(category_slug):
     print(f"DEBUG: Mobile Nav Type for this page: category_detail_nav")
 
     return render_template(
-        'category_management_page.html',  # Template hiển thị chi tiết danh mục
-        category_slug=category_slug,  # << QUAN TRỌNG: Truyền slug này
+        'category_management_page.html',
+        category_slug=category_slug,
         category_display_name=category_info["display_name"],
         category_bg_image=category_info["image_url"],
         category_description=category_info["description"],
         page_specific_title=f'{category_info["display_name"]}',
-        # contextual_sidebar='category_management', # Cho sidebar desktop nếu cần
-        mobile_nav_type='category_detail_nav'  # << QUAN TRỌNG: Để layout biết dùng nav nào cho mobile
+
+        mobile_nav_type='category_detail_nav'
     )
 
 @app.route('/quan-ly-san-pham/tong-quan/chi-tiet')
@@ -393,25 +367,25 @@ def product_dashboard_overview_detail():
 
 @app.route('/quan-ly-san-pham/don-hang/xu-ly')
 def pd_don_hang_xu_ly():
-    # ... (code của bạn)
+
     if 'username' not in session: return redirect(url_for('login_page'))
-    # ... (phần còn lại của hàm)
+
     return render_template('product_dashboard_content_donhang_xuly.html', orders=[])
 
 
 @app.route('/quan-ly-san-pham/don-hang/nhap', methods=['GET', 'POST'])
 def pd_don_hang_nhap():
-    # ... (code của bạn)
+
     if 'username' not in session: return redirect(url_for('login_page'))
-    # ... (phần còn lại của hàm)
+
     return render_template('product_dashboard_content_donhang_nhap.html')
 
 
 @app.route('/quan-ly-san-pham/don-hang/gan-qr', methods=['GET', 'POST'])
 def pd_don_hang_gan_qr():
-    # ... (code của bạn)
+
     if 'username' not in session: return redirect(url_for('login_page'))
-    # ... (phần còn lại của hàm)
+
     return render_template('product_dashboard_content_donhang_ganqr.html')
 
 
@@ -423,10 +397,10 @@ def pd_ton_kho_quan_ly():
         SELECT id, name, price, qty, category, product_id_internal, date_added, expiry_date, product_qr_code_path 
         FROM products ORDER BY date_added DESC, name
     """)
-    # ... (xử lý products_data)
-    products_list = [] # Thay thế bằng logic của bạn
-    for p_row in c.fetchall(): # Giả sử bạn đã fetchall()
-        # ... (xử lý từng p_row)
+
+    products_list = []
+    for p_row in c.fetchall():
+
         products_list.append({
             'id': p_row[0], 'name': p_row[1], 'price': p_row[2], 'qty': p_row[3], 'category': p_row[4],
             'product_id_internal': p_row[5], 'date_added': p_row[6], 'expiry_date': p_row[7],
@@ -436,7 +410,7 @@ def pd_ton_kho_quan_ly():
         'product_dashboard_content_tonkho.html',
         products=products_list,
         contextual_sidebar=None,
-        mobile_nav_type='main_dashboard_nav' # << Thanh nav dưới cho trang này trên mobile
+        mobile_nav_type='main_dashboard_nav'
     )
 
 @app.route('/quan-ly-san-pham/bao-cao')
@@ -451,29 +425,26 @@ def pd_bao_cao_xem():
 
 @app.route('/quan-ly-san-pham/thong-tin-ca-nhan')
 def pd_user_profile():
-    # ... (code của bạn)
+
     if 'username' not in session: return redirect(url_for('login_page'))
-    # ... (phần còn lại của hàm)
+
     return render_template('product_dashboard_content_user_profile.html', user_info=None)
 
 
 @app.route('/quan-ly-san-pham/nhap-san-pham-moi', methods=['GET', 'POST'])
 def pd_nhap_san_pham_moi():
-    # ... (code của bạn)
+
     if 'username' not in session: return redirect(url_for('login_page'))
-    # Sửa đường dẫn lưu QR code sản phẩm
+
     if request.method == 'POST':
-        # ... (logic xử lý POST của bạn)
+
         product_name = request.form.get('product_name')
         if product_name:
-            # ...
-            # SỬA ĐƯỜNG DẪN QR FOLDER CHO SẢN PHẨM
+
             qr_folder_sp = os.path.join(os.path.dirname(__file__), 'static', 'product_qrcodes')
             if not os.path.exists(qr_folder_sp):
                 os.makedirs(qr_folder_sp)
-            # ... (phần còn lại của logic tạo QR)
-            # ...
-    # ... (phần còn lại của hàm)
+
     return render_template('product_dashboard_content_nhap_sanpham.html')
 
 
@@ -502,7 +473,7 @@ def pd_xuat_kho_quet_page():
 
 @app.route('/process-scanned-product-barcode', methods=['POST'])
 def process_scanned_product_barcode():
-    # ... (code của bạn)
+
     if 'username' not in session: return jsonify({'error': 'Unauthorized'}), 401
     # ... (phần còn lại của hàm)
     return jsonify({'exists_in_db': False})
@@ -510,13 +481,11 @@ def process_scanned_product_barcode():
 
 @app.route('/save-scanned-product-to-inventory', methods=['POST'])
 def save_scanned_product_to_inventory():
-    # ... (code của bạn)
+
     if 'username' not in session: return jsonify({'error': 'Unauthorized'}), 401
-    # Sửa đường dẫn lưu QR code sản phẩm
+
     if request.method == 'POST':
-        # ...
-            # SỬA ĐƯỜNG DẪN QR FOLDER CHO SẢN PHẨM (NẾU TẠO MỚI)
-            # qr_folder_sys = os.path.join(app.static_folder, 'product_qrcodes')
+
             qr_folder_sys = os.path.join(os.path.dirname(__file__), 'static', 'product_qrcodes')
             if not os.path.exists(qr_folder_sys): os.makedirs(qr_folder_sys)
         # ...
@@ -526,8 +495,7 @@ def save_scanned_product_to_inventory():
 
 @app.route('/san-pham/qr-info/<product_internal_id>')
 def view_product_details_by_qr(product_internal_id):
-    # ... (code của bạn)
-    # ... (phần còn lại của hàm)
+
     return render_template('view_product_by_qr.html', product=None)
 
 
@@ -543,8 +511,6 @@ def process_and_log_scan():
         if not scanned_data:
             return jsonify({'error': 'Không có dữ liệu mã quét'}), 400
 
-        # 1. Tra cứu sản phẩm trong bảng products
-        # Giả sử mã quét được có thể là product_id_internal hoặc barcode_data
         c.execute("""
             SELECT id, name, product_id_internal, barcode_data 
             FROM products 
@@ -559,7 +525,6 @@ def process_and_log_scan():
             product_id_db = product[0]
             product_name_db = product[1]
 
-        # 2. Lấy user_id
         user_id = None
         if 'username' in session:
             c.execute("SELECT id FROM users WHERE username = ?", (session['username'],))
@@ -567,7 +532,6 @@ def process_and_log_scan():
             if user_obj:
                 user_id = user_obj[0]
 
-        # 3. Lưu vào bảng scan_log
         c.execute("""
             INSERT INTO scan_log (scanned_data, product_id, product_name_at_scan, user_id)
             VALUES (?, ?, ?, ?)
